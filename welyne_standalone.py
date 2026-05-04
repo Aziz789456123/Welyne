@@ -438,7 +438,10 @@ if not model_ok:
 # ─────────────────────────────────────────────────────────────────
 if st.session_state.res is None:
 
-    title_html = t['title'].replace('\n','<br>').replace('<em>','<em style="font-style:italic;color:#F0D080;">')
+    title_html   = t['title'].replace('\n','<br>').replace('<em>','<em style="font-style:italic;color:#F0D080;">')
+    stat1_label  = "mesures d'entraînement" if st.session_state.lang=='fr' else "training measurements"
+    stat2_label  = "précision du modèle"    if st.session_state.lang=='fr' else "model accuracy"
+    stat3_label  = "indicateurs calculés"   if st.session_state.lang=='fr' else "indicators calculated"
     st.markdown(f"""
     <div class="hero">
         <div style="max-width:700px;margin:0 auto;">
@@ -446,11 +449,11 @@ if st.session_state.res is None:
             <div class="hero-title">{title_html}</div>
             <p class="hero-subtitle">{t['subtitle']}</p>
             <div class="hero-stats">
-                <div><div class="hero-stat-num">6 068</div><div class="hero-stat-label">{'mesures d\'entraînement' if st.session_state.lang=='fr' else 'training measurements'}</div></div>
+                <div><div class="hero-stat-num">6 068</div><div class="hero-stat-label">{stat1_label}</div></div>
                 <div class="hero-divider"></div>
-                <div><div class="hero-stat-num">86%</div><div class="hero-stat-label">{'précision du modèle' if st.session_state.lang=='fr' else 'model accuracy'}</div></div>
+                <div><div class="hero-stat-num">86%</div><div class="hero-stat-label">{stat2_label}</div></div>
                 <div class="hero-divider"></div>
-                <div><div class="hero-stat-num">6</div><div class="hero-stat-label">{'indicateurs calculés' if st.session_state.lang=='fr' else 'indicators calculated'}</div></div>
+                <div><div class="hero-stat-num">6</div><div class="hero-stat-label">{stat3_label}</div></div>
             </div>
         </div>
     </div>
