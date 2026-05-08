@@ -28,7 +28,7 @@ st.set_page_config(
 def charger_modele():
     """Charge le modèle une seule fois au démarrage."""
     try:
-        model = joblib.load("welyne_model_ridge.joblib")
+        model = joblib.load("welyne_model_gb_phase5.joblib")
         return model, True
     except Exception as e:
         return None, False
@@ -218,6 +218,26 @@ section[data-testid="stSidebar"] { display: none; }
     background: linear-gradient(90deg, transparent, #C9A84C, transparent);
     margin: 2rem 0; opacity: 0.35;
 }
+.calib-section {
+    background: linear-gradient(135deg, #FFFBEB, #FFF8E7);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    margin: 1rem 0;
+}
+.calib-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 20px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.78rem;
+    color: #7A4F00;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
 .medical-warn {
     background: #FFFBEB; border: 1px solid rgba(201,168,76,0.3);
     border-radius: 10px; padding: 0.9rem 1.3rem;
@@ -345,13 +365,37 @@ for k, v in [('hist', []), ('res', None), ('lang', 'fr'), ('sexe', 'male'), ('pr
 # ─────────────────────────────────────────────────────────────────
 # LOGIQUE MEDICALE
 # ─────────────────────────────────────────────────────────────────
-def predire(height, weight, age, gender):
+def predire(height, weight, age, gender, waist_reel=None, hip_reel=None):
     sex  = 1 if gender == "male" else 0
     bmi  = round(weight / (height/100)**2, 2)
     feat = np.array([[height, weight, age, sex, bmi]])
     pred = model.predict(feat)[0]
-    waist = round(float(pred[0]), 1)
-    hip   = round(float(pred[1]), 1)
+    waist_predit = round(float(pred[0]), 1)
+    hip_predit   = round(float(pred[1]), 1)
+
+    # ── Calibration : si l'utilisateur a ses vraies mesures ──────
+    calibre = False
+    if waist_reel is not None and hip_reel is not None:
+        # On utilise directement les vraies mesures
+        waist  = round(float(waist_reel), 1)
+        hip    = round(float(hip_reel), 1)
+        calibre = True
+    elif waist_reel is not None:
+        # On a le vrai waist → on corrige hip proportionnellement
+        ecart = waist_reel - waist_predit
+        waist  = round(float(waist_reel), 1)
+        hip    = round(hip_predit + ecart * 0.6, 1)
+        calibre = True
+    elif hip_reel is not None:
+        # On a le vrai hip → on corrige waist proportionnellement
+        ecart = hip_reel - hip_predit
+        hip    = round(float(hip_reel), 1)
+        waist  = round(waist_predit + ecart * 0.6, 1)
+        calibre = True
+    else:
+        waist = waist_predit
+        hip   = hip_predit
+
     whr   = round(waist / hip, 3) if hip > 0 else 0.0
     bf    = round(max(3.0, min(60.0, (1.20*bmi) + (0.23*age) - (10.8*sex) - 5.4)), 1)
 
@@ -377,6 +421,7 @@ def predire(height, weight, age, gender):
     return {
         "BMI": bmi, "waist": waist, "hip": hip, "whr": whr,
         "bf": bf, "score": score, "sex": sex,
+        "calibre": calibre,
         "imc_cat": imc_cat(bmi),
         "waist_st": "ok" if (waist<94 if sex==1 else waist<80) else ("warn" if (waist<102 if sex==1 else waist<88) else "danger"),
         "whr_st"  : "ok" if whr < sw else "warn",
@@ -493,9 +538,47 @@ if st.session_state.res is None:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # ── Section calibration optionnelle ──────────────────────────
+    st.markdown(f"""
+    <div class="calib-section">
+        <div style="font-size:0.82rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#7A4F00;margin-bottom:0.4rem;">⚙️ {t['calib_title']}</div>
+        <div style="font-size:0.88rem;color:#4B5563;">{t['calib_info']}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    use_calib = st.checkbox(f"✍️  {t['calib_title']}", value=False)
+
+    waist_reel = None
+    hip_reel   = None
+
+    if use_calib:
+        cc1, cc2 = st.columns(2, gap="large")
+        with cc1:
+            waist_input = st.number_input(
+                t['calib_waist'],
+                min_value=50.0, max_value=200.0,
+                value=None, step=0.5,
+                placeholder="Ex: 88.0",
+                help="Mesurez-vous avec un mètre ruban autour du nombril"
+            )
+            if waist_input:
+                waist_reel = float(waist_input)
+        with cc2:
+            hip_input = st.number_input(
+                t['calib_hip'],
+                min_value=60.0, max_value=200.0,
+                value=None, step=0.5,
+                placeholder="Ex: 98.0",
+                help="Mesurez-vous à l'endroit le plus large des hanches"
+            )
+            if hip_input:
+                hip_reel = float(hip_input)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
     if st.button(f"🔍  {t['btn']}"):
         with st.spinner(t['loading']):
-            res = predire(taille, poids, age, sexe)
+            res = predire(taille, poids, age, sexe, waist_reel, hip_reel)
         entry = {
             "date"  : datetime.now().strftime("%d/%m %H:%M"),
             "profil": f"{taille}cm/{poids}kg/{age}ans/{sexe_l}",
@@ -522,11 +605,16 @@ else:
         st.rerun()
 
     # Profil
+    calibre_txt = ""
+    if res.get('calibre'):
+        calibre_txt = f'<span class="calib-badge">✓ {t["calib_badge"]}</span>'
+
     st.markdown(f"""
     <div class="profil-card">
         <div>
             <div class="profil-name">{profil}</div>
             <div class="profil-sub">Welyne — Analyse morphologique</div>
+            {calibre_txt}
         </div>
         <div class="profil-time">{datetime.now().strftime("%d %B %Y, %H:%M")}</div>
     </div>
