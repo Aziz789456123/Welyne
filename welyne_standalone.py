@@ -24,15 +24,16 @@ st.set_page_config(
 # ─────────────────────────────────────────────────────────────────
 # CHARGEMENT DU MODELE
 # ─────────────────────────────────────────────────────────────────
+# Modèle Ridge intégré directement dans le code (aucun fichier externe requis)
+MODEL_B64 = """gASVuQUAAAAAAACMEHNrbGVhcm4ucGlwZWxpbmWUjAhQaXBlbGluZZSTlCmBlH2UKIwFc3RlcHOUXZQojAZzY2FsZXKUjBtza2xlYXJuLnByZXByb2Nlc3NpbmcuX2RhdGGUjA5TdGFuZGFyZFNjYWxlcpSTlCmBlH2UKIwJd2l0aF9tZWFulIiMCHdpdGhfc3RklIiMBGNvcHmUiIwObl9mZWF0dXJlc19pbl+USwWMD25fc2FtcGxlc19zZWVuX5SMFm51bXB5Ll9jb3JlLm11bHRpYXJyYXmUjAZzY2FsYXKUk5SMBW51bXB5lIwFZHR5cGWUk5SMAmY4lImIh5RSlChLA4wBPJROTk5K/////0r/////SwB0lGJDCAAAAAAA9rJAlIaUUpSMBW1lYW5flGgSjAxfcmVjb25zdHJ1Y3SUk5RoFYwHbmRhcnJheZSTlEsAhZRDAWKUh5RSlChLAUsFhZRoF4wCZjiUiYiHlFKUKEsDaBtOTk5K/////0r/////SwB0lGKJQygCU8GsBW1lQATGOjLV6lNAJazgqkTPPUCHs+6rRoblP8HKu5l89jpAlHSUYowEdmFyX5RoImgkSwCFlGgmh5RSlChLAUsFhZRoLIlDKIMzsU33HVRAgTigC0bcbkAQXE/4C9ZSQN6VJedZL8w/mxw2jWMdMECUdJRijAZzY2FsZV+UaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQyir61lQ2fAhQH/am4fQbC9A4l43qzhcIUAZAwzVLgjePxAGXQ2rDhBAlHSUYowQX3NrbGVhcm5fdmVyc2lvbpSMBTEuOC4wlHVihpSMBW1vZGVslIwTc2tsZWFybi5tdWx0aW91dHB1dJSMFE11bHRpT3V0cHV0UmVncmVzc29ylJOUKYGUfZQojAllc3RpbWF0b3KUjBtza2xlYXJuLmxpbmVhcl9tb2RlbC5fcmlkZ2WUjAVSaWRnZZSTlCmBlH2UKIwFYWxwaGGURz/wAAAAAAAAjA1maXRfaW50ZXJjZXB0lIiMBmNvcHlfWJSIjAhtYXhfaXRlcpROjAN0b2yURz8aNuLrHEMtjAZzb2x2ZXKUjARhdXRvlIwIcG9zaXRpdmWUiYwMcmFuZG9tX3N0YXRllE5oPmg/dWKMBm5fam9ic5ROjAtlc3RpbWF0b3JzX5RdlChoSimBlH2UKGhNRz/wAAAAAAAAaE6IaE+IaFBOaFFHPxo24uscQy1oUmhTaFSJaFVOaBBLBYwFY29lZl+UaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQygAcRgDWiDxP3ialceSPwxAFHjSP4PP9j+er2J6OCzovwaadvqGFxtAlHSUYowHbl9pdGVyX5ROjAdzb2x2ZXJflIwIY2hvbGVza3mUjAppbnRlcmNlcHRflGgUaBpDCGRjBFD52lZAlIaUUpRoPmg/dWJoSimBlH2UKGhNRz/wAAAAAAAAaE6IaE+IaFBOaFFHPxo24uscQy1oUmhTaFSJaFVOaBBLBWhbaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQyiRDd+vtKwQQNcziHaQvva/5IVCsKo41L8mgaI7QqIQwATii7aIByBAlHSUYmhiTmhjaGRoZWgUaBpDCJg35JKrfVlAlIaUUpRoPmg/dWJoSimBlH2UKGhNRz/wAAAAAAAAaE6IaE+IaFBOaFFHPxo24uscQy1oUmhTaFSJaFVOaBBLBWhbaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQyjdpNEWyFiHv+kkkAmKsJM/Ia4w7G2JkT/fc33VFg+dPztc2JGiAJE/lHSUYmhiTmhjaGRoZWgUaBpDCMeaLMLjouw/lIaUUpRoPmg/dWJlaBBLBWg+aD91YoaUZYwPdHJhbnNmb3JtX2lucHV0lE6MBm1lbW9yeZROjAd2ZXJib3NllIloPmg/dWIu"""
+
 @st.cache_resource
 def charger_modele():
-    """Charge le modèle une seule fois au démarrage."""
+    """Charge le modèle depuis la constante base64 intégrée."""
     try:
-        import os
-        # Chercher le modèle dans le même dossier que ce fichier Python
-        base_dir  = os.path.dirname(os.path.abspath(__file__))
-        model_path = os.path.join(base_dir, "welyne_model_gb_phase5.joblib")
-        model = joblib.load(model_path)
+        import base64, pickle
+        model_bytes = base64.b64decode(MODEL_B64)
+        model = pickle.loads(model_bytes)
         return model, True
     except Exception as e:
         return None, False
@@ -479,7 +480,7 @@ t = T[st.session_state.lang]
 # ERREUR MODELE
 # ─────────────────────────────────────────────────────────────────
 if not model_ok:
-    st.error("Modèle non trouvé. Assurez-vous que welyne_model_gb_phase5.joblib est dans le même dossier.")
+    st.error("Modèle non trouvé. Assurez-vous que modèle intégré. Contactez le support.")
     st.stop()
 
 # ─────────────────────────────────────────────────────────────────
