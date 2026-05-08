@@ -475,7 +475,7 @@ t = T[st.session_state.lang]
 # ERREUR MODELE
 # ─────────────────────────────────────────────────────────────────
 if not model_ok:
-    st.error("Modèle non trouvé. Assurez-vous que welyne_model_ridge.joblib est dans le même dossier.")
+    st.error("Modèle non trouvé. Assurez-vous que welyne_model_gb_phase5.joblib est dans le même dossier.")
     st.stop()
 
 # ─────────────────────────────────────────────────────────────────
