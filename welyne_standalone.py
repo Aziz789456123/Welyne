@@ -28,7 +28,11 @@ st.set_page_config(
 def charger_modele():
     """Charge le modèle une seule fois au démarrage."""
     try:
-        model = joblib.load("welyne_model_gb_phase5.joblib")
+        import os
+        # Chercher le modèle dans le même dossier que ce fichier Python
+        base_dir  = os.path.dirname(os.path.abspath(__file__))
+        model_path = os.path.join(base_dir, "welyne_model_gb_phase5.joblib")
+        model = joblib.load(model_path)
         return model, True
     except Exception as e:
         return None, False
