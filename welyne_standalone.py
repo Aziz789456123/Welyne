@@ -24,12 +24,12 @@ st.set_page_config(
 # ─────────────────────────────────────────────────────────────────
 # CHARGEMENT DU MODELE
 # ─────────────────────────────────────────────────────────────────
-# Modèle Ridge intégré directement dans le code (aucun fichier externe requis)
-MODEL_B64 = """gASVuQUAAAAAAACMEHNrbGVhcm4ucGlwZWxpbmWUjAhQaXBlbGluZZSTlCmBlH2UKIwFc3RlcHOUXZQojAZzY2FsZXKUjBtza2xlYXJuLnByZXByb2Nlc3NpbmcuX2RhdGGUjA5TdGFuZGFyZFNjYWxlcpSTlCmBlH2UKIwJd2l0aF9tZWFulIiMCHdpdGhfc3RklIiMBGNvcHmUiIwObl9mZWF0dXJlc19pbl+USwWMD25fc2FtcGxlc19zZWVuX5SMFm51bXB5Ll9jb3JlLm11bHRpYXJyYXmUjAZzY2FsYXKUk5SMBW51bXB5lIwFZHR5cGWUk5SMAmY4lImIh5RSlChLA4wBPJROTk5K/////0r/////SwB0lGJDCAAAAAAA9rJAlIaUUpSMBW1lYW5flGgSjAxfcmVjb25zdHJ1Y3SUk5RoFYwHbmRhcnJheZSTlEsAhZRDAWKUh5RSlChLAUsFhZRoF4wCZjiUiYiHlFKUKEsDaBtOTk5K/////0r/////SwB0lGKJQygCU8GsBW1lQATGOjLV6lNAJazgqkTPPUCHs+6rRoblP8HKu5l89jpAlHSUYowEdmFyX5RoImgkSwCFlGgmh5RSlChLAUsFhZRoLIlDKIMzsU33HVRAgTigC0bcbkAQXE/4C9ZSQN6VJedZL8w/mxw2jWMdMECUdJRijAZzY2FsZV+UaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQyir61lQ2fAhQH/am4fQbC9A4l43qzhcIUAZAwzVLgjePxAGXQ2rDhBAlHSUYowQX3NrbGVhcm5fdmVyc2lvbpSMBTEuOC4wlHVihpSMBW1vZGVslIwTc2tsZWFybi5tdWx0aW91dHB1dJSMFE11bHRpT3V0cHV0UmVncmVzc29ylJOUKYGUfZQojAllc3RpbWF0b3KUjBtza2xlYXJuLmxpbmVhcl9tb2RlbC5fcmlkZ2WUjAVSaWRnZZSTlCmBlH2UKIwFYWxwaGGURz/wAAAAAAAAjA1maXRfaW50ZXJjZXB0lIiMBmNvcHlfWJSIjAhtYXhfaXRlcpROjAN0b2yURz8aNuLrHEMtjAZzb2x2ZXKUjARhdXRvlIwIcG9zaXRpdmWUiYwMcmFuZG9tX3N0YXRllE5oPmg/dWKMBm5fam9ic5ROjAtlc3RpbWF0b3JzX5RdlChoSimBlH2UKGhNRz/wAAAAAAAAaE6IaE+IaFBOaFFHPxo24uscQy1oUmhTaFSJaFVOaBBLBYwFY29lZl+UaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQygAcRgDWiDxP3ialceSPwxAFHjSP4PP9j+er2J6OCzovwaadvqGFxtAlHSUYowHbl9pdGVyX5ROjAdzb2x2ZXJflIwIY2hvbGVza3mUjAppbnRlcmNlcHRflGgUaBpDCGRjBFD52lZAlIaUUpRoPmg/dWJoSimBlH2UKGhNRz/wAAAAAAAAaE6IaE+IaFBOaFFHPxo24uscQy1oUmhTaFSJaFVOaBBLBWhbaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQyiRDd+vtKwQQNcziHaQvva/5IVCsKo41L8mgaI7QqIQwATii7aIByBAlHSUYmhiTmhjaGRoZWgUaBpDCJg35JKrfVlAlIaUUpRoPmg/dWJoSimBlH2UKGhNRz/wAAAAAAAAaE6IaE+IaFBOaFFHPxo24uscQy1oUmhTaFSJaFVOaBBLBWhbaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQyjdpNEWyFiHv+kkkAmKsJM/Ia4w7G2JkT/fc33VFg+dPztc2JGiAJE/lHSUYmhiTmhjaGRoZWgUaBpDCMeaLMLjouw/lIaUUpRoPmg/dWJlaBBLBWg+aD91YoaUZYwPdHJhbnNmb3JtX2lucHV0lE6MBm1lbW9yeZROjAd2ZXJib3NllIloPmg/dWIu"""
+# Modele Ridge integre en base64
+MODEL_B64 = "gASVuQUAAAAAAACMEHNrbGVhcm4ucGlwZWxpbmWUjAhQaXBlbGluZZSTlCmBlH2UKIwFc3RlcHOUXZQojAZzY2FsZXKUjBtza2xlYXJuLnByZXByb2Nlc3NpbmcuX2RhdGGUjA5TdGFuZGFyZFNjYWxlcpSTlCmBlH2UKIwJd2l0aF9tZWFulIiMCHdpdGhfc3RklIiMBGNvcHmUiIwObl9mZWF0dXJlc19pbl+USwWMD25fc2FtcGxlc19zZWVuX5SMFm51bXB5Ll9jb3JlLm11bHRpYXJyYXmUjAZzY2FsYXKUk5SMBW51bXB5lIwFZHR5cGWUk5SMAmY4lImIh5RSlChLA4wBPJROTk5K/////0r/////SwB0lGJDCAAAAAAA9rJAlIaUUpSMBW1lYW5flGgSjAxfcmVjb25zdHJ1Y3SUk5RoFYwHbmRhcnJheZSTlEsAhZRDAWKUh5RSlChLAUsFhZRoF4wCZjiUiYiHlFKUKEsDaBtOTk5K/////0r/////SwB0lGKJQygCU8GsBW1lQATGOjLV6lNAJazgqkTPPUCHs+6rRoblP8HKu5l89jpAlHSUYowEdmFyX5RoImgkSwCFlGgmh5RSlChLAUsFhZRoLIlDKIMzsU33HVRAgTigC0bcbkAQXE/4C9ZSQN6VJedZL8w/mxw2jWMdMECUdJRijAZzY2FsZV+UaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQyir61lQ2fAhQH/am4fQbC9A4l43qzhcIUAZAwzVLgjePxAGXQ2rDhBAlHSUYowQX3NrbGVhcm5fdmVyc2lvbpSMBTEuOC4wlHVihpSMBW1vZGVslIwTc2tsZWFybi5tdWx0aW91dHB1dJSMFE11bHRpT3V0cHV0UmVncmVzc29ylJOUKYGUfZQojAllc3RpbWF0b3KUjBtza2xlYXJuLmxpbmVhcl9tb2RlbC5fcmlkZ2WUjAVSaWRnZZSTlCmBlH2UKIwFYWxwaGGURz/wAAAAAAAAjA1maXRfaW50ZXJjZXB0lIiMBmNvcHlfWJSIjAhtYXhfaXRlcpROjAN0b2yURz8aNuLrHEMtjAZzb2x2ZXKUjARhdXRvlIwIcG9zaXRpdmWUiYwMcmFuZG9tX3N0YXRllE5oPmg/dWKMBm5fam9ic5ROjAtlc3RpbWF0b3JzX5RdlChoSimBlH2UKGhNRz/wAAAAAAAAaE6IaE+IaFBOaFFHPxo24uscQy1oUmhTaFSJaFVOaBBLBYwFY29lZl+UaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQygAcRgDWiDxP3ialceSPwxAFHjSP4PP9j+er2J6OCzovwaadvqGFxtAlHSUYowHbl9pdGVyX5ROjAdzb2x2ZXJflIwIY2hvbGVza3mUjAppbnRlcmNlcHRflGgUaBpDCGRjBFD52lZAlIaUUpRoPmg/dWJoSimBlH2UKGhNRz/wAAAAAAAAaE6IaE+IaFBOaFFHPxo24uscQy1oUmhTaFSJaFVOaBBLBWhbaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQyiRDd+vtKwQQNcziHaQvva/5IVCsKo41L8mgaI7QqIQwATii7aIByBAlHSUYmhiTmhjaGRoZWgUaBpDCJg35JKrfVlAlIaUUpRoPmg/dWJoSimBlH2UKGhNRz/wAAAAAAAAaE6IaE+IaFBOaFFHPxo24uscQy1oUmhTaFSJaFVOaBBLBWhbaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQyjdpNEWyFiHv+kkkAmKsJM/Ia4w7G2JkT/fc33VFg+dPztc2JGiAJE/lHSUYmhiTmhjaGRoZWgUaBpDCMeaLMLjouw/lIaUUpRoPmg/dWJlaBBLBWg+aD91YoaUZYwPdHJhbnNmb3JtX2lucHV0lE6MBm1lbW9yeZROjAd2ZXJib3NllIloPmg/dWIu"
 
 @st.cache_resource
 def charger_modele():
-    """Charge le modèle depuis la constante base64 intégrée."""
+    """Charge le modele integre en base64."""
     try:
         import base64, pickle
         model_bytes = base64.b64decode(MODEL_B64)
@@ -223,26 +223,6 @@ section[data-testid="stSidebar"] { display: none; }
     background: linear-gradient(90deg, transparent, #C9A84C, transparent);
     margin: 2rem 0; opacity: 0.35;
 }
-.calib-section {
-    background: linear-gradient(135deg, #FFFBEB, #FFF8E7);
-    border: 1px solid rgba(201,168,76,0.3);
-    border-radius: 12px;
-    padding: 1.2rem 1.5rem;
-    margin: 1rem 0;
-}
-.calib-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: rgba(201,168,76,0.15);
-    border: 1px solid rgba(201,168,76,0.4);
-    border-radius: 20px;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.78rem;
-    color: #7A4F00;
-    font-weight: 600;
-    margin-top: 0.5rem;
-}
 .medical-warn {
     background: #FFFBEB; border: 1px solid rgba(201,168,76,0.3);
     border-radius: 10px; padding: 0.9rem 1.3rem;
@@ -271,6 +251,10 @@ T = {
         "sexe":"Sexe", "homme":"Homme", "femme":"Femme",
         "imc_calc":"IMC calculé",
         "btn":"Analyser mon profil",
+        "calib_title":"Avez-vous vos vraies mesures ? (optionnel)",
+        "calib_waist":"Mon vrai tour de taille (cm)",
+        "calib_hip":"Mon vrai tour de hanches (cm)",
+        "calib_badge":"Calibre avec vos mesures reelles",
         "loading":"Analyse en cours...",
         "res_label":"Vos résultats", "res_title":"Analyse complète",
         "score_label":"Score de risque cardio-métabolique",
@@ -319,6 +303,10 @@ T = {
         "sexe":"Sex", "homme":"Male", "femme":"Female",
         "imc_calc":"Calculated BMI",
         "btn":"Analyze my profile",
+        "calib_title":"Do you have your real measurements? (optional)",
+        "calib_waist":"My real waist circumference (cm)",
+        "calib_hip":"My real hip circumference (cm)",
+        "calib_badge":"Calibrated with your real measurements",
         "loading":"Analyzing...",
         "res_label":"Your results", "res_title":"Full analysis",
         "score_label":"Cardio-metabolic risk score",
@@ -375,32 +363,19 @@ def predire(height, weight, age, gender, waist_reel=None, hip_reel=None):
     bmi  = round(weight / (height/100)**2, 2)
     feat = np.array([[height, weight, age, sex, bmi]])
     pred = model.predict(feat)[0]
-    waist_predit = round(float(pred[0]), 1)
-    hip_predit   = round(float(pred[1]), 1)
-
-    # ── Calibration : si l'utilisateur a ses vraies mesures ──────
+    waist_p = round(float(pred[0]), 1)
+    hip_p   = round(float(pred[1]), 1)
     calibre = False
-    if waist_reel is not None and hip_reel is not None:
-        # On utilise directement les vraies mesures
-        waist  = round(float(waist_reel), 1)
-        hip    = round(float(hip_reel), 1)
-        calibre = True
-    elif waist_reel is not None:
-        # On a le vrai waist → on corrige hip proportionnellement
-        ecart = waist_reel - waist_predit
-        waist  = round(float(waist_reel), 1)
-        hip    = round(hip_predit + ecart * 0.6, 1)
-        calibre = True
-    elif hip_reel is not None:
-        # On a le vrai hip → on corrige waist proportionnellement
-        ecart = hip_reel - hip_predit
-        hip    = round(float(hip_reel), 1)
-        waist  = round(waist_predit + ecart * 0.6, 1)
-        calibre = True
+    if waist_reel and hip_reel:
+        waist, hip, calibre = round(waist_reel,1), round(hip_reel,1), True
+    elif waist_reel:
+        ecart = waist_reel - waist_p
+        waist, hip, calibre = round(waist_reel,1), round(hip_p + ecart*0.6, 1), True
+    elif hip_reel:
+        ecart = hip_reel - hip_p
+        waist, hip, calibre = round(waist_p + ecart*0.6,1), round(hip_reel,1), True
     else:
-        waist = waist_predit
-        hip   = hip_predit
-
+        waist, hip = waist_p, hip_p
     whr   = round(waist / hip, 3) if hip > 0 else 0.0
     bf    = round(max(3.0, min(60.0, (1.20*bmi) + (0.23*age) - (10.8*sex) - 5.4)), 1)
 
@@ -426,7 +401,7 @@ def predire(height, weight, age, gender, waist_reel=None, hip_reel=None):
     return {
         "BMI": bmi, "waist": waist, "hip": hip, "whr": whr,
         "bf": bf, "score": score, "sex": sex,
-        "calibre": calibre,
+        "calibre": calibre if 'calibre' in dir() else False,
         "imc_cat": imc_cat(bmi),
         "waist_st": "ok" if (waist<94 if sex==1 else waist<80) else ("warn" if (waist<102 if sex==1 else waist<88) else "danger"),
         "whr_st"  : "ok" if whr < sw else "warn",
@@ -480,7 +455,7 @@ t = T[st.session_state.lang]
 # ERREUR MODELE
 # ─────────────────────────────────────────────────────────────────
 if not model_ok:
-    st.error("Modèle non trouvé. Assurez-vous que modèle intégré. Contactez le support.")
+    st.error("Modèle non trouvé. Assurez-vous que welyne_model_ridge.joblib est dans le même dossier.")
     st.stop()
 
 # ─────────────────────────────────────────────────────────────────
@@ -488,10 +463,7 @@ if not model_ok:
 # ─────────────────────────────────────────────────────────────────
 if st.session_state.res is None:
 
-    title_html   = t['title'].replace('\n','<br>').replace('<em>','<em style="font-style:italic;color:#F0D080;">')
-    stat1_label  = "mesures d'entraînement" if st.session_state.lang=='fr' else "training measurements"
-    stat2_label  = "précision du modèle"    if st.session_state.lang=='fr' else "model accuracy"
-    stat3_label  = "indicateurs calculés"   if st.session_state.lang=='fr' else "indicators calculated"
+    title_html = t['title'].replace('\n','<br>').replace('<em>','<em style="font-style:italic;color:#F0D080;">')
     st.markdown(f"""
     <div class="hero">
         <div style="max-width:700px;margin:0 auto;">
@@ -499,11 +471,11 @@ if st.session_state.res is None:
             <div class="hero-title">{title_html}</div>
             <p class="hero-subtitle">{t['subtitle']}</p>
             <div class="hero-stats">
-                <div><div class="hero-stat-num">6 068</div><div class="hero-stat-label">{stat1_label}</div></div>
+                <div><div class="hero-stat-num">6 068</div><div class="hero-stat-label">{'mesures d\'entraînement' if st.session_state.lang=='fr' else 'training measurements'}</div></div>
                 <div class="hero-divider"></div>
-                <div><div class="hero-stat-num">86%</div><div class="hero-stat-label">{stat2_label}</div></div>
+                <div><div class="hero-stat-num">86%</div><div class="hero-stat-label">{'précision du modèle' if st.session_state.lang=='fr' else 'model accuracy'}</div></div>
                 <div class="hero-divider"></div>
-                <div><div class="hero-stat-num">6</div><div class="hero-stat-label">{stat3_label}</div></div>
+                <div><div class="hero-stat-num">6</div><div class="hero-stat-label">{'indicateurs calculés' if st.session_state.lang=='fr' else 'indicators calculated'}</div></div>
             </div>
         </div>
     </div>
@@ -543,41 +515,20 @@ if st.session_state.res is None:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Section calibration optionnelle ──────────────────────────
-    st.markdown(f"""
-    <div class="calib-section">
-        <div style="font-size:0.82rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#7A4F00;margin-bottom:0.4rem;">⚙️ {t['calib_title']}</div>
-        <div style="font-size:0.88rem;color:#4B5563;">{t['calib_info']}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    use_calib = st.checkbox(f"✍️  {t['calib_title']}", value=False)
-
+    # Section calibration optionnelle
+    use_calib = st.checkbox(f"📏  {t['calib_title']}", value=False)
     waist_reel = None
     hip_reel   = None
-
     if use_calib:
         cc1, cc2 = st.columns(2, gap="large")
         with cc1:
-            waist_input = st.number_input(
-                t['calib_waist'],
-                min_value=50.0, max_value=200.0,
-                value=None, step=0.5,
-                placeholder="Ex: 88.0",
-                help="Mesurez-vous avec un mètre ruban autour du nombril"
-            )
-            if waist_input:
-                waist_reel = float(waist_input)
+            w_in = st.number_input(t['calib_waist'], min_value=50.0, max_value=200.0,
+                                   value=None, step=0.5, placeholder="Ex: 88.0")
+            if w_in: waist_reel = float(w_in)
         with cc2:
-            hip_input = st.number_input(
-                t['calib_hip'],
-                min_value=60.0, max_value=200.0,
-                value=None, step=0.5,
-                placeholder="Ex: 98.0",
-                help="Mesurez-vous à l'endroit le plus large des hanches"
-            )
-            if hip_input:
-                hip_reel = float(hip_input)
+            h_in = st.number_input(t['calib_hip'], min_value=60.0, max_value=200.0,
+                                   value=None, step=0.5, placeholder="Ex: 98.0")
+            if h_in: hip_reel = float(h_in)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -610,16 +561,11 @@ else:
         st.rerun()
 
     # Profil
-    calibre_txt = ""
-    if res.get('calibre'):
-        calibre_txt = f'<span class="calib-badge">✓ {t["calib_badge"]}</span>'
-
     st.markdown(f"""
     <div class="profil-card">
         <div>
             <div class="profil-name">{profil}</div>
             <div class="profil-sub">Welyne — Analyse morphologique</div>
-            {calibre_txt}
         </div>
         <div class="profil-time">{datetime.now().strftime("%d %B %Y, %H:%M")}</div>
     </div>
