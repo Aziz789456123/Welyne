@@ -242,7 +242,7 @@ T = {
     "fr": {
         "eyebrow":"Plateforme de santé intelligente",
         "title":"Votre bilan\n<em>morphologique</em>\npersonnalisé",
-        "subtitle":"Estimez vos indicateurs de santé en quelques secondes à partir de 4 données simples. Basé sur 6 068 mesures réelles.",
+        "subtitle":"Estimez vos indicateurs de santé en quelques secondes à partir de 4 données simples. Basé sur 12 555 mesures réelles.",
         "form_label":"Votre profil", "form_title":"Renseignez vos informations",
         "taille":"Taille (cm)", "poids":"Poids (kg)", "age":"Âge (années)",
         "sexe":"Sexe", "homme":"Homme", "femme":"Femme",
@@ -293,7 +293,7 @@ T = {
     "en": {
         "eyebrow":"Intelligent health platform",
         "title":"Your personalized\n<em>morphological</em>\nassessment",
-        "subtitle":"Estimate your health indicators in seconds from 4 simple inputs. Based on 6,068 real measurements.",
+        "subtitle":"Estimate your health indicators in seconds from 4 simple inputs. Based on 12,555 real measurements.",
         "form_label":"Your profile", "form_title":"Enter your information",
         "taille":"Height (cm)", "poids":"Weight (kg)", "age":"Age (years)",
         "sexe":"Sex", "homme":"Male", "femme":"Female",
@@ -465,9 +465,9 @@ if st.session_state.res is None:
             <div class="hero-title">{title_html}</div>
             <p class="hero-subtitle">{t['subtitle']}</p>
             <div class="hero-stats">
-                <div><div class="hero-stat-num">6 068</div><div class="hero-stat-label">{stat1_label}</div></div>
+                <div><div class="hero-stat-num">12 555</div><div class="hero-stat-label">{stat1_label}</div></div>
                 <div class="hero-divider"></div>
-                <div><div class="hero-stat-num">86%</div><div class="hero-stat-label">{stat2_label}</div></div>
+                <div><div class="hero-stat-num">88%</div><div class="hero-stat-label">{stat2_label}</div></div>
                 <div class="hero-divider"></div>
                 <div><div class="hero-stat-num">6</div><div class="hero-stat-label">{stat3_label}</div></div>
             </div>
