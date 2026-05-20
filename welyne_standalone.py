@@ -712,116 +712,156 @@ def afficher_historique_persistant(t):
 # SILHOUETTE MORPHOLOGIQUE SVG (Phase 8)
 # ─────────────────────────────────────────────────────────────────
 def generer_silhouette(waist, hip, height, gender, risk_score, t):
-    """Génère une silhouette SVG dynamique basée sur les mesures."""
+    """Silhouette SVG premium avec dégradés, reflets et zones colorées."""
 
-    # Couleurs selon risque
     if risk_score < 30:
-        zc = "#1A6B3A"; zl = t["silhouette_legend_low"]
+        rc = "#1A6B3A"; rl = "#D4EDDA"; zone_lbl = t["silhouette_legend_low"]
     elif risk_score < 60:
-        zc = "#B45309"; zl = t["silhouette_legend_med"]
+        rc = "#B45309"; rl = "#FEF3C7"; zone_lbl = t["silhouette_legend_med"]
     else:
-        zc = "#B91C1C"; zl = t["silhouette_legend_high"]
+        rc = "#B91C1C"; rl = "#FEE2E2"; zone_lbl = t["silhouette_legend_high"]
 
-    bf = "#E8D5C4"
-    bs = "#B8A090"
-    cx = 210   # centre horizontal dans viewBox 420
+    wn = min(max((waist - 60) / 60, 0), 1)
+    hn = min(max((hip   - 70) / 60, 0), 1)
+    cx = 160
 
-    # Calcul des demi-largeurs proportionnelles à la taille
-    sc = 260 / max(height, 150)
-
-    # Différencier homme et femme
+    # Proportions différentes selon le genre
     if gender == "male":
-        sw = min(max(hip * sc * 0.44, 32), 60)   # épaules larges
-        cw = min(max(hip * sc * 0.42, 30), 58)   # poitrine
-        ww = min(max(waist * sc * 0.34, 22), 50) # taille
-        hw = min(max(hip   * sc * 0.38, 28), 54) # hanches
-        lw = min(max(hip   * sc * 0.17, 10), 24) # jambe
+        sw = 44 + hn * 8    # épaules larges
+        cw = 36 + wn * 6    # poitrine
+        ww = 24 + wn * 18   # taille
+        hw = 30 + hn * 10   # hanches étroites
+        lw = 13 + hn * 3
     else:
-        sw = min(max(hip * sc * 0.38, 26), 52)   # épaules moins larges
-        cw = min(max(hip * sc * 0.40, 28), 56)   # poitrine plus large
-        ww = min(max(waist * sc * 0.30, 18), 44) # taille plus fine
-        hw = min(max(hip   * sc * 0.44, 32), 62) # hanches plus larges
-        lw = min(max(hip   * sc * 0.16, 9),  22) # jambe
+        sw = 30 + hn * 5    # épaules fines
+        cw = 32 + wn * 7    # poitrine
+        ww = 18 + wn * 16   # taille fine
+        hw = 38 + hn * 16   # hanches larges
+        lw = 13 + hn * 4
 
-    # Coordonnées Y
-    yH = 52; rH = 20   # tête
-    yN = 78            # bas cou
-    yS = 95            # épaules
-    yC = 145           # poitrine
-    yW = 205           # taille
-    yP = 260           # hanches
-    yK = 345           # genoux
-    yF = 415           # pieds
+    yHd=48; yNk=82; ySh=102; yCh=155; yWa=212; yHi=268; yKn=355; yFt=430
 
-    # Path corps — courbes douces Bézier
-    p = (
-        f"M {cx} {yN} "
-        # côté gauche de haut en bas
-        f"C {cx-12} {yN+4}, {cx-sw-4} {yS-2}, {cx-sw} {yS} "
-        f"C {cx-sw-2} {yS+20}, {cx-cw-4} {yC-10}, {cx-cw} {yC} "
-        f"C {cx-cw-2} {yC+20}, {cx-ww-6} {yW-20}, {cx-ww} {yW} "
-        f"C {cx-ww-4} {yW+18}, {cx-hw-4} {yP-15}, {cx-hw} {yP} "
-        f"C {cx-hw+2} {yP+22}, {cx-lw-4} {yK-20}, {cx-lw} {yK} "
-        f"L {cx-lw+1} {yF} "
-        # séparation jambes
-        f"L {cx-5} {yF} "
-        f"L {cx-5} {yK+10} "
-        f"L {cx+5} {yK+10} "
-        f"L {cx+5} {yF} "
-        # côté droit de bas en haut
-        f"L {cx+lw-1} {yF} "
-        f"L {cx+lw} {yK} "
-        f"C {cx+lw+4} {yK-20}, {cx+hw-2} {yP+22}, {cx+hw} {yP} "
-        f"C {cx+hw+4} {yP-15}, {cx+ww+4} {yW+18}, {cx+ww} {yW} "
-        f"C {cx+ww+6} {yW-20}, {cx+cw+2} {yC+20}, {cx+cw} {yC} "
-        f"C {cx+cw+4} {yC-10}, {cx+sw+2} {yS+20}, {cx+sw} {yS} "
-        f"C {cx+sw+4} {yS-2}, {cx+12} {yN+4}, {cx} {yN} Z"
+    body = (
+        f"M {cx} {yNk} "
+        f"C {cx-12} {yNk+5} {cx-sw-6} {ySh-4} {cx-sw} {ySh} "
+        f"C {cx-sw-2} {ySh+22} {cx-cw-6} {yCh-8} {cx-cw} {yCh} "
+        f"C {cx-cw-3} {yCh+18} {cx-ww-8} {yWa-22} {cx-ww} {yWa} "
+        f"C {cx-ww-5} {yWa+20} {cx-hw-6} {yHi-16} {cx-hw} {yHi} "
+        f"C {cx-hw+2} {yHi+28} {cx-lw-5} {yKn-22} {cx-lw} {yKn} "
+        f"L {cx-lw+2} {yFt} "
+        f"L {cx-4} {yFt} L {cx-4} {yKn+8} L {cx+4} {yKn+8} L {cx+4} {yFt} "
+        f"L {cx+lw-2} {yFt} "
+        f"L {cx+lw} {yKn} "
+        f"C {cx+lw+5} {yKn-22} {cx+hw-2} {yHi+28} {cx+hw} {yHi} "
+        f"C {cx+hw+6} {yHi-16} {cx+ww+5} {yWa+20} {cx+ww} {yWa} "
+        f"C {cx+ww+8} {yWa-22} {cx+cw+3} {yCh+18} {cx+cw} {yCh} "
+        f"C {cx+cw+6} {yCh-8} {cx+sw+2} {ySh+22} {cx+sw} {ySh} "
+        f"C {cx+sw+6} {ySh-4} {cx+12} {yNk+5} {cx} {yNk} Z"
     )
 
-    # Positions des zones colorées
-    wx1 = cx - ww - 12; wxw = (ww + 12) * 2
-    hx1 = cx - hw - 12; hxw = (hw + 12) * 2
+    # Poitrine féminine
+    bust_html = ""
+    if gender == "female":
+        br = 9 + wn * 3
+        bust_html = (
+            f'<ellipse cx="{cx-cw*0.38}" cy="{yCh+10}" rx="{br}" ry="{br*0.75}" '
+            f'fill="url(#sg)" stroke="#C09878" stroke-width="0.5" clip-path="url(#bc)"/>' 
+            f'<ellipse cx="{cx+cw*0.38}" cy="{yCh+10}" rx="{br}" ry="{br*0.75}" '
+            f'fill="url(#sg)" stroke="#C09878" stroke-width="0.5" clip-path="url(#bc)"/>'
+            f'<ellipse cx="{cx-cw*0.38-2}" cy="{yCh+5}" rx="{br*0.35}" ry="{br*0.25}" fill="#fff" opacity="0.18" clip-path="url(#bc)"/>'
+            f'<ellipse cx="{cx+cw*0.38-2}" cy="{yCh+5}" rx="{br*0.35}" ry="{br*0.25}" fill="#fff" opacity="0.18" clip-path="url(#bc)"/>'
+        )
 
-    lines = []
-    lines.append(f'<svg viewBox="0 0 420 480" width="100%" style="max-width:360px;display:block;margin:0 auto;">')
-    lines.append(f'  <defs><clipPath id="bc"><path d="{p}"/></clipPath></defs>')
+    lines = [
+        f'<svg viewBox="0 0 320 510" width="100%" style="max-width:300px;display:block;margin:0 auto;">',
+        '<defs>',
+        '<radialGradient id="sg" cx="35%" cy="30%" r="70%">',
+        '  <stop offset="0%" stop-color="#F5DEC8"/>',
+        '  <stop offset="60%" stop-color="#E8C8A8"/>',
+        '  <stop offset="100%" stop-color="#C8A880"/>',
+        '</radialGradient>',
+        '<radialGradient id="hg" cx="35%" cy="30%" r="70%">',
+        '  <stop offset="0%" stop-color="#F0D0B0"/>',
+        '  <stop offset="100%" stop-color="#B89060"/>',
+        '</radialGradient>',
+        f'<radialGradient id="zg" cx="50%" cy="50%" r="60%">',
+        f'  <stop offset="0%" stop-color="{rc}" stop-opacity="0.45"/>',
+        f'  <stop offset="100%" stop-color="{rc}" stop-opacity="0.08"/>',
+        '</radialGradient>',
+        '<filter id="blur2"><feGaussianBlur stdDeviation="2"/></filter>',
+        '<filter id="blur4"><feGaussianBlur stdDeviation="4"/></filter>',
+        f'<clipPath id="bc"><path d="{body}"/></clipPath>',
+        '</defs>',
 
-    # Corps
-    lines.append(f'  <path d="{p}" fill="{bf}" stroke="{bs}" stroke-width="1.5"/>')
+        # Ombre sol
+        f'<ellipse cx="{cx}" cy="{yFt+14}" rx="{int(hw*0.85)}" ry="10" fill="#000" opacity="0.13" filter="url(#blur4)"/>',
 
-    # Zone taille
-    lines.append(f'  <rect x="{wx1}" y="{yW-26}" width="{wxw}" height="54" rx="8" fill="{zc}" opacity="0.28" clip-path="url(#bc)"/>')
-    lines.append(f'  <rect x="{wx1}" y="{yW-26}" width="{wxw}" height="54" rx="8" fill="none" stroke="{zc}" stroke-width="1.8" opacity="0.55" clip-path="url(#bc)"/>')
+        # Corps
+        f'<path d="{body}" fill="url(#sg)" stroke="#C09878" stroke-width="1"/>',
 
-    # Zone hanches (légère)
-    lines.append(f'  <rect x="{hx1}" y="{yP-22}" width="{hxw}" height="46" rx="8" fill="{zc}" opacity="0.13" clip-path="url(#bc)"/>')
+        # Relief gauche
+        f'<rect x="{cx-hw-10}" y="{ySh}" width="{int(hw*0.35)}" height="{yFt-ySh}" fill="#000" opacity="0.08" clip-path="url(#bc)" filter="url(#blur2)"/>',
 
-    # Tête (par-dessus tout)
-    lines.append(f'  <circle cx="{cx}" cy="{yH}" r="{rH}" fill="{bf}" stroke="{bs}" stroke-width="1.5"/>')
+        # Reflet droit
+        f'<rect x="{int(cx+ww*0.3)}" y="{ySh}" width="{int(ww*0.4)}" height="{yFt-ySh}" fill="#fff" opacity="0.10" clip-path="url(#bc)" filter="url(#blur2)"/>',
 
-    # Label taille — à gauche du corps
-    lx = cx - ww - 18
-    lines.append(f'  <line x1="{lx-2}" y1="{yW}" x2="{cx-ww-2}" y2="{yW}" stroke="{zc}" stroke-width="1.2" stroke-dasharray="4,2"/>')
-    lines.append(f'  <text x="{lx-5}" y="{yW-9}" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="{zc}" font-weight="600">{t["silhouette_waist_lbl"]}</text>')
-    lines.append(f'  <text x="{lx-5}" y="{yW+7}" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="{zc}" font-weight="700">{waist:.1f} cm</text>')
+        # Zone taille colorée
+        f'<rect x="{cx-ww-14}" y="{yWa-28}" width="{(ww+14)*2}" height="58" fill="url(#zg)" clip-path="url(#bc)"/>',
+        f'<rect x="{cx-ww-14}" y="{yWa-28}" width="{(ww+14)*2}" height="58" rx="6" fill="none" stroke="{rc}" stroke-width="2" opacity="0.55" clip-path="url(#bc)"/>',
 
-    # Label hanches — à gauche
-    hx = cx - hw - 18
-    lines.append(f'  <line x1="{hx-2}" y1="{yP+4}" x2="{cx-hw-2}" y2="{yP+4}" stroke="#6B7280" stroke-width="1.2" stroke-dasharray="4,2"/>')
-    lines.append(f'  <text x="{hx-5}" y="{yP-5}" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="#6B7280" font-weight="600">{t["silhouette_hip_lbl"]}</text>')
-    lines.append(f'  <text x="{hx-5}" y="{yP+12}" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#6B7280" font-weight="700">{hip:.1f} cm</text>')
+        # Zone hanches
+        f'<rect x="{cx-hw-10}" y="{yHi-22}" width="{(hw+10)*2}" height="46" fill="{rc}" opacity="0.10" clip-path="url(#bc)"/>',
 
-    # Badge WHR
-    lines.append(f'  <rect x="{cx-38}" y="{yW+30}" width="76" height="22" rx="11" fill="{zc}" opacity="0.12"/>')
-    lines.append(f'  <rect x="{cx-38}" y="{yW+30}" width="76" height="22" rx="11" fill="none" stroke="{zc}" stroke-width="1" opacity="0.45"/>')
-    lines.append(f'  <text x="{cx}" y="{yW+45}" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="{zc}" font-weight="600">WHR {waist/hip:.2f}</text>')
+        # Reflet épaule
+        f'<ellipse cx="{int(cx-sw*0.3)}" cy="{ySh+8}" rx="{int(sw*0.25)}" ry="8" fill="#fff" opacity="0.18" clip-path="url(#bc)"/>',
 
-    # Légende
-    lines.append(f'  <rect x="{cx-50}" y="450" width="12" height="12" rx="3" fill="{zc}" opacity="0.7"/>')
-    lines.append(f'  <text x="{cx-33}" y="461" font-family="Arial,sans-serif" font-size="11" fill="{zc}" font-weight="600">{zl}</text>')
+        # Poitrine féminine
+        bust_html,
 
-    lines.append('</svg>')
+        # Cou
+        f'<path d="M {cx-10} {yNk} C {cx-8} {yNk-10} {cx+8} {yNk-10} {cx+10} {yNk} C {cx+9} {yHd+22} {cx-9} {yHd+22} {cx-10} {yNk} Z" fill="url(#sg)" stroke="#C09878" stroke-width="0.8"/>',
+
+        # Tête
+        f'<ellipse cx="{cx}" cy="{yHd}" rx="22" ry="24" fill="url(#hg)" stroke="#C09878" stroke-width="1"/>',
+        f'<ellipse cx="{cx-7}" cy="{yHd-8}" rx="8" ry="6" fill="#fff" opacity="0.22"/>',
+        f'<ellipse cx="{cx}" cy="{yHd+18}" rx="11" ry="5" fill="#000" opacity="0.10" filter="url(#blur2)"/>',
+
+        # Cheveux femme
+        (f'<ellipse cx="{cx}" cy="{yHd-18}" rx="23" ry="10" fill="#8B6343" stroke="#6B4323" stroke-width="0.8"/>' +
+         f'<ellipse cx="{cx-20}" cy="{yHd-5}" rx="6" ry="15" fill="#8B6343"/>' +
+         f'<ellipse cx="{cx+20}" cy="{yHd-5}" rx="6" ry="15" fill="#8B6343"/>')
+        if gender == "female" else
+        # Cheveux homme courts
+        f'<ellipse cx="{cx}" cy="{yHd-20}" rx="22" ry="8" fill="#6B4323" stroke="#4B2303" stroke-width="0.8"/>',
+
+        # Bras gauche
+        f'<path d="M {cx-sw} {ySh+5} C {cx-sw-14} {ySh+20} {cx-sw-16} {yCh} {cx-sw-12} {yWa-15} C {cx-sw-7} {yWa-10} {cx-sw-2} {yCh+5} {cx-sw+5} {ySh+8} Z" fill="url(#sg)" stroke="#C09878" stroke-width="0.8"/>',
+        # Bras droit
+        f'<path d="M {cx+sw} {ySh+5} C {cx+sw+14} {ySh+20} {cx+sw+16} {yCh} {cx+sw+12} {yWa-15} C {cx+sw+7} {yWa-10} {cx+sw+2} {yCh+5} {cx+sw-5} {ySh+8} Z" fill="url(#sg)" stroke="#C09878" stroke-width="0.8"/>',
+
+        # Lignes de mesure
+        f'<line x1="{cx-ww-22}" y1="{yWa}" x2="{cx-ww-4}" y2="{yWa}" stroke="{rc}" stroke-width="1.2" stroke-dasharray="4,2"/>',
+        f'<line x1="{cx+ww+4}" y1="{yWa}" x2="{cx+ww+22}" y2="{yWa}" stroke="{rc}" stroke-width="1.2" stroke-dasharray="4,2"/>',
+        f'<text x="{cx-ww-27}" y="{yWa-8}" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="{rc}" font-weight="700">{waist:.1f} cm</text>',
+        f'<text x="{cx-ww-27}" y="{yWa+7}" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="{rc}" opacity="0.8">{t["silhouette_waist_lbl"]}</text>',
+
+        f'<line x1="{cx-hw-22}" y1="{yHi+6}" x2="{cx-hw-4}" y2="{yHi+6}" stroke="#888" stroke-width="1" stroke-dasharray="4,2"/>',
+        f'<text x="{cx-hw-27}" y="{yHi+2}" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="#888" font-weight="700">{hip:.1f} cm</text>',
+        f'<text x="{cx-hw-27}" y="{yHi+15}" text-anchor="end" font-family="Arial,sans-serif" font-size="10" fill="#aaa">{t["silhouette_hip_lbl"]}</text>',
+
+        # Badge WHR
+        f'<rect x="{cx-38}" y="{yWa+32}" width="76" height="22" rx="11" fill="{rc}" opacity="0.12"/>',
+        f'<rect x="{cx-38}" y="{yWa+32}" width="76" height="22" rx="11" fill="none" stroke="{rc}" stroke-width="1" opacity="0.4"/>',
+        f'<text x="{cx}" y="{yWa+47}" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="{rc}" font-weight="600">WHR {waist/hip:.2f}</text>',
+
+        # Légende
+        f'<rect x="{cx-14}" y="478" width="13" height="13" rx="3" fill="{rc}" opacity="0.7"/>',
+        f'<text x="{cx+4}" y="489" font-family="Arial,sans-serif" font-size="11" fill="{rc}" font-weight="600">{zone_lbl}</text>',
+
+        '</svg>'
+    ]
     return "\n".join(lines)
+
 
 
 
