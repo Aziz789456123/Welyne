@@ -664,7 +664,7 @@ def afficher_historique_persistant(t):
     df_show.columns = ["Date", "IMC", "Taille (cm)", "Hanches (cm)", "WHR", "Masse grasse (%)", "Score", "Niveau"]
     st.dataframe(df_show, use_container_width=True, hide_index=True)
 
-    if st.button(f"🗑  {t['clear']}"):
+    if st.button(f"🗑  {t['clear']}", key="btn_clear_supabase"):
         sb_delete_analyses(st.session_state.access_token, st.session_state.user_id)
         st.rerun()
 
@@ -961,7 +961,7 @@ else:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        if st.button(f"🗑  {t['clear']}"):
+        if st.button(f"🗑  {t['clear']}", key="btn_clear_supabase"):
             st.session_state.hist = []
             st.rerun()
 
