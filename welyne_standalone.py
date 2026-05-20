@@ -914,54 +914,6 @@ else:
             st.markdown(f'<div class="reco-item"><div class="reco-dot {cls}"></div><div class="reco-text">{txt}</div></div>', unsafe_allow_html=True)
 
     # Historique
-    if len(st.session_state.hist) > 1:
-        st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="section-label">{t["hist_label"]}</div><div class="section-title">{t["hist_title"]}</div>', unsafe_allow_html=True)
-
-        df = pd.DataFrame(st.session_state.hist)
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=df['date'], y=df['waist'],
-            name=t['n_waist'],
-            line=dict(color='#0E6655',width=3),
-            mode='lines+markers',
-            marker=dict(size=10,color='#0E6655',line=dict(color='white',width=2))
-        ))
-        fig.add_trace(go.Scatter(
-            x=df['date'], y=df['score'],
-            name=t['n_score'],
-            line=dict(color='#C9A84C',width=3,dash='dot'),
-            mode='lines+markers',
-            marker=dict(size=10,color='#C9A84C',line=dict(color='white',width=2)),
-            yaxis='y2'
-        ))
-        fig.update_layout(
-            plot_bgcolor='white', paper_bgcolor='white',
-            height=320, margin=dict(t=40,b=50,l=60,r=70),
-            yaxis=dict(
-                title='Tour de taille (cm)',
-                title_font=dict(color='#0E6655',size=12,family='DM Sans'),
-                tickfont=dict(color='#0E6655',size=11),
-                gridcolor='#EEEEEE', showline=True, linecolor='#CCCCCC',
-            ),
-            yaxis2=dict(
-                title='Score (/100)',
-                title_font=dict(color='#C9A84C',size=12,family='DM Sans'),
-                tickfont=dict(color='#C9A84C',size=11),
-                overlaying='y', side='right', range=[0,100],
-                showgrid=False, showline=True, linecolor='#CCCCCC',
-            ),
-            xaxis=dict(tickfont=dict(color='#333333',size=11),gridcolor='#EEEEEE'),
-            legend=dict(
-                orientation='h', yanchor='bottom', y=1.02,
-                xanchor='center', x=0.5,
-                bgcolor='white', bordercolor='#DDDDDD', borderwidth=1,
-                font=dict(size=12,color='#333333',family='DM Sans'),
-            ),
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-        if st.button(f"🗑  {t['clear']}", key="btn_clear_local"):
             st.session_state.hist = []
             st.rerun()
 
