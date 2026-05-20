@@ -712,7 +712,7 @@ def afficher_historique_persistant(t):
 # SILHOUETTE MORPHOLOGIQUE SVG (Phase 8)
 # ─────────────────────────────────────────────────────────────────
 def generer_silhouette(waist, hip, height, gender, risk_score, t):
-    """Génère une silhouette SVG dynamique."""
+    """Génère une silhouette SVG dynamique basée sur les mesures."""
 
     # Couleurs selon risque
     if risk_score < 30:
@@ -722,99 +722,107 @@ def generer_silhouette(waist, hip, height, gender, risk_score, t):
     else:
         zc = "#B91C1C"; zl = t["silhouette_legend_high"]
 
-    # Dimensions fixes — silhouette centrée sur x=200 dans viewBox 420x500
-    cx = 200
-    bf = "#E8D5C4"   # body fill
-    bs = "#B8A090"   # body stroke
+    bf = "#E8D5C4"
+    bs = "#B8A090"
+    cx = 210   # centre horizontal dans viewBox 420
 
-    # Calculer les largeurs proportionnelles
-    sc   = 280 / max(height, 150)
-    sw   = min(max(hip * sc * 0.75, 50), 90)    # épaules demi-largeur
-    ww   = min(max(waist * sc * 0.38, 25), 55)  # taille demi-largeur
-    hw   = min(max(hip   * sc * 0.42, 35), 65)  # hanches demi-largeur
-    lw   = min(max(hip   * sc * 0.19, 12), 28)  # jambe demi-largeur
+    # Calcul des demi-largeurs proportionnelles à la taille
+    sc = 260 / max(height, 150)
 
-    # Coordonnées Y fixes
-    yH = 52    # centre tête
-    rH = 22    # rayon tête
-    yN = 82    # bas cou
-    yS = 100   # épaules
-    yW = 200   # taille
-    yP = 260   # hanches
-    yK = 350   # genoux
-    yF = 420   # pieds
+    # Différencier homme et femme
+    if gender == "male":
+        sw = min(max(hip * sc * 0.44, 32), 60)   # épaules larges
+        cw = min(max(hip * sc * 0.42, 30), 58)   # poitrine
+        ww = min(max(waist * sc * 0.34, 22), 50) # taille
+        hw = min(max(hip   * sc * 0.38, 28), 54) # hanches
+        lw = min(max(hip   * sc * 0.17, 10), 24) # jambe
+    else:
+        sw = min(max(hip * sc * 0.38, 26), 52)   # épaules moins larges
+        cw = min(max(hip * sc * 0.40, 28), 56)   # poitrine plus large
+        ww = min(max(waist * sc * 0.30, 18), 44) # taille plus fine
+        hw = min(max(hip   * sc * 0.44, 32), 62) # hanches plus larges
+        lw = min(max(hip   * sc * 0.16, 9),  22) # jambe
 
-    # Construire le path du corps avec des courbes douces
-    # Côté gauche puis droit
-    path = (
+    # Coordonnées Y
+    yH = 52; rH = 20   # tête
+    yN = 78            # bas cou
+    yS = 95            # épaules
+    yC = 145           # poitrine
+    yW = 205           # taille
+    yP = 260           # hanches
+    yK = 345           # genoux
+    yF = 415           # pieds
+
+    # Path corps — courbes douces Bézier
+    p = (
         f"M {cx} {yN} "
-        f"C {cx-14} {yN+5}, {cx-sw-5} {yS-5}, {cx-sw} {yS} "
-        f"C {cx-sw-3} {yS+30}, {cx-ww-10} {yW-30}, {cx-ww} {yW} "
-        f"C {cx-ww-8} {yW+25}, {cx-hw-5} {yP-20}, {cx-hw} {yP} "
-        f"C {cx-hw+2} {yP+30}, {cx-lw-4} {yK-25}, {cx-lw} {yK} "
-        f"L {cx-lw+2} {yF} "
-        f"L {cx+lw-2} {yF} "
+        # côté gauche de haut en bas
+        f"C {cx-12} {yN+4}, {cx-sw-4} {yS-2}, {cx-sw} {yS} "
+        f"C {cx-sw-2} {yS+20}, {cx-cw-4} {yC-10}, {cx-cw} {yC} "
+        f"C {cx-cw-2} {yC+20}, {cx-ww-6} {yW-20}, {cx-ww} {yW} "
+        f"C {cx-ww-4} {yW+18}, {cx-hw-4} {yP-15}, {cx-hw} {yP} "
+        f"C {cx-hw+2} {yP+22}, {cx-lw-4} {yK-20}, {cx-lw} {yK} "
+        f"L {cx-lw+1} {yF} "
+        # séparation jambes
+        f"L {cx-5} {yF} "
+        f"L {cx-5} {yK+10} "
+        f"L {cx+5} {yK+10} "
+        f"L {cx+5} {yF} "
+        # côté droit de bas en haut
+        f"L {cx+lw-1} {yF} "
         f"L {cx+lw} {yK} "
-        f"C {cx+lw+4} {yK-25}, {cx+hw-2} {yP+30}, {cx+hw} {yP} "
-        f"C {cx+hw+5} {yP-20}, {cx+ww+8} {yW+25}, {cx+ww} {yW} "
-        f"C {cx+ww+10} {yW-30}, {cx+sw+3} {yS+30}, {cx+sw} {yS} "
-        f"C {cx+sw+5} {yS-5}, {cx+14} {yN+5}, {cx} {yN} Z"
+        f"C {cx+lw+4} {yK-20}, {cx+hw-2} {yP+22}, {cx+hw} {yP} "
+        f"C {cx+hw+4} {yP-15}, {cx+ww+4} {yW+18}, {cx+ww} {yW} "
+        f"C {cx+ww+6} {yW-20}, {cx+cw+2} {yC+20}, {cx+cw} {yC} "
+        f"C {cx+cw+4} {yC-10}, {cx+sw+2} {yS+20}, {cx+sw} {yS} "
+        f"C {cx+sw+4} {yS-2}, {cx+12} {yN+4}, {cx} {yN} Z"
     )
 
-    # Zones colorées (waist et hip)
-    wx1 = cx - ww - 10; wx2 = (ww + 10) * 2
-    hx1 = cx - hw - 10; hx2 = (hw + 10) * 2
+    # Positions des zones colorées
+    wx1 = cx - ww - 12; wxw = (ww + 12) * 2
+    hx1 = cx - hw - 12; hxw = (hw + 12) * 2
 
-    # Construire le SVG avec des string simples (pas de triple f-string)
     lines = []
-    lines.append(f'<svg viewBox="0 0 420 480" width="100%" style="max-width:380px;display:block;margin:0 auto;">')
-    lines.append(f'  <defs><clipPath id="bc"><path d="{path}"/></clipPath></defs>')
+    lines.append(f'<svg viewBox="0 0 420 480" width="100%" style="max-width:360px;display:block;margin:0 auto;">')
+    lines.append(f'  <defs><clipPath id="bc"><path d="{p}"/></clipPath></defs>')
 
-    # Corps de base
-    lines.append(f'  <path d="{path}" fill="{bf}" stroke="{bs}" stroke-width="1.5"/>')
+    # Corps
+    lines.append(f'  <path d="{p}" fill="{bf}" stroke="{bs}" stroke-width="1.5"/>')
 
-    # Zone taille colorée (clippée sur le corps)
-    lines.append(f'  <rect x="{wx1}" y="{yW-28}" width="{wx2}" height="58" rx="8" fill="{zc}" opacity="0.30" clip-path="url(#bc)"/>')
-    lines.append(f'  <rect x="{wx1}" y="{yW-28}" width="{wx2}" height="58" rx="8" fill="none" stroke="{zc}" stroke-width="2" opacity="0.55" clip-path="url(#bc)"/>')
+    # Zone taille
+    lines.append(f'  <rect x="{wx1}" y="{yW-26}" width="{wxw}" height="54" rx="8" fill="{zc}" opacity="0.28" clip-path="url(#bc)"/>')
+    lines.append(f'  <rect x="{wx1}" y="{yW-26}" width="{wxw}" height="54" rx="8" fill="none" stroke="{zc}" stroke-width="1.8" opacity="0.55" clip-path="url(#bc)"/>')
 
-    # Zone hanches (plus légère)
-    lines.append(f'  <rect x="{hx1}" y="{yP-28}" width="{hx2}" height="58" rx="8" fill="{zc}" opacity="0.15" clip-path="url(#bc)"/>')
+    # Zone hanches (légère)
+    lines.append(f'  <rect x="{hx1}" y="{yP-22}" width="{hxw}" height="46" rx="8" fill="{zc}" opacity="0.13" clip-path="url(#bc)"/>')
 
-    # Tête (par-dessus le corps)
+    # Tête (par-dessus tout)
     lines.append(f'  <circle cx="{cx}" cy="{yH}" r="{rH}" fill="{bf}" stroke="{bs}" stroke-width="1.5"/>')
 
-    # Lignes de mesure taille
-    lwa = cx - ww
-    rwa = cx + ww
-    lines.append(f'  <line x1="{lwa-20}" y1="{yW}" x2="{lwa-4}" y2="{yW}" stroke="{zc}" stroke-width="1.5" stroke-dasharray="4,2"/>')
-    lines.append(f'  <line x1="{rwa+4}" y1="{yW}" x2="{rwa+20}" y2="{yW}" stroke="{zc}" stroke-width="1.5" stroke-dasharray="4,2"/>')
+    # Label taille — à gauche du corps
+    lx = cx - ww - 18
+    lines.append(f'  <line x1="{lx-2}" y1="{yW}" x2="{cx-ww-2}" y2="{yW}" stroke="{zc}" stroke-width="1.2" stroke-dasharray="4,2"/>')
+    lines.append(f'  <text x="{lx-5}" y="{yW-9}" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="{zc}" font-weight="600">{t["silhouette_waist_lbl"]}</text>')
+    lines.append(f'  <text x="{lx-5}" y="{yW+7}" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="{zc}" font-weight="700">{waist:.1f} cm</text>')
 
-    # Label taille (à gauche)
-    lbl_x = lwa - 25
-    lines.append(f'  <text x="{lbl_x}" y="{yW-10}" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="{zc}" font-weight="600">{t["silhouette_waist_lbl"]}</text>')
-    lines.append(f'  <text x="{lbl_x}" y="{yW+7}" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="{zc}" font-weight="700">{waist:.1f} cm</text>')
+    # Label hanches — à gauche
+    hx = cx - hw - 18
+    lines.append(f'  <line x1="{hx-2}" y1="{yP+4}" x2="{cx-hw-2}" y2="{yP+4}" stroke="#6B7280" stroke-width="1.2" stroke-dasharray="4,2"/>')
+    lines.append(f'  <text x="{hx-5}" y="{yP-5}" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="#6B7280" font-weight="600">{t["silhouette_hip_lbl"]}</text>')
+    lines.append(f'  <text x="{hx-5}" y="{yP+12}" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#6B7280" font-weight="700">{hip:.1f} cm</text>')
 
-    # Lignes de mesure hanches
-    lhi = cx - hw
-    rhi = cx + hw
-    lines.append(f'  <line x1="{lhi-20}" y1="{yP+5}" x2="{lhi-4}" y2="{yP+5}" stroke="#6B7280" stroke-width="1" stroke-dasharray="4,2"/>')
-    lines.append(f'  <line x1="{rhi+4}" y1="{yP+5}" x2="{rhi+20}" y2="{yP+5}" stroke="#6B7280" stroke-width="1" stroke-dasharray="4,2"/>')
+    # Badge WHR
+    lines.append(f'  <rect x="{cx-38}" y="{yW+30}" width="76" height="22" rx="11" fill="{zc}" opacity="0.12"/>')
+    lines.append(f'  <rect x="{cx-38}" y="{yW+30}" width="76" height="22" rx="11" fill="none" stroke="{zc}" stroke-width="1" opacity="0.45"/>')
+    lines.append(f'  <text x="{cx}" y="{yW+45}" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="{zc}" font-weight="600">WHR {waist/hip:.2f}</text>')
 
-    # Label hanches
-    lines.append(f'  <text x="{lbl_x}" y="{yP-5}" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="#6B7280" font-weight="600">{t["silhouette_hip_lbl"]}</text>')
-    lines.append(f'  <text x="{lbl_x}" y="{yP+12}" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#6B7280" font-weight="700">{hip:.1f} cm</text>')
-
-    # Badge WHR centré
-    lines.append(f'  <rect x="{cx-38}" y="{yW+32}" width="76" height="22" rx="11" fill="{zc}" opacity="0.12"/>')
-    lines.append(f'  <rect x="{cx-38}" y="{yW+32}" width="76" height="22" rx="11" fill="none" stroke="{zc}" stroke-width="1" opacity="0.5"/>')
-    lines.append(f'  <text x="{cx}" y="{yW+47}" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="{zc}" font-weight="600">WHR {waist/hip:.2f}</text>')
-
-    # Légende en bas
-    lines.append(f'  <rect x="{cx-55}" y="448" width="12" height="12" rx="3" fill="{zc}" opacity="0.7"/>')
-    lines.append(f'  <text x="{cx-38}" y="459" font-family="Arial,sans-serif" font-size="11" fill="{zc}" font-weight="600">{zl}</text>')
+    # Légende
+    lines.append(f'  <rect x="{cx-50}" y="450" width="12" height="12" rx="3" fill="{zc}" opacity="0.7"/>')
+    lines.append(f'  <text x="{cx-33}" y="461" font-family="Arial,sans-serif" font-size="11" fill="{zc}" font-weight="600">{zl}</text>')
 
     lines.append('</svg>')
     return "\n".join(lines)
+
 
 
 # ─────────────────────────────────────────────────────────────────
