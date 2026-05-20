@@ -913,10 +913,6 @@ else:
         if txt:
             st.markdown(f'<div class="reco-item"><div class="reco-dot {cls}"></div><div class="reco-text">{txt}</div></div>', unsafe_allow_html=True)
 
-    # Historique
-            st.session_state.hist = []
-            st.rerun()
-
     # Historique persistant Supabase
     afficher_historique_persistant(t)
 
