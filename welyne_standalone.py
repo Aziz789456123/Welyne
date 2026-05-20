@@ -712,165 +712,110 @@ def afficher_historique_persistant(t):
 # SILHOUETTE MORPHOLOGIQUE SVG (Phase 8)
 # ─────────────────────────────────────────────────────────────────
 def generer_silhouette(waist, hip, height, gender, risk_score, t):
-    """Génère une silhouette SVG dynamique basée sur les mesures."""
+    """Génère une silhouette SVG dynamique."""
 
-    # Couleurs selon le score de risque
+    # Couleurs selon risque
     if risk_score < 30:
-        zone_color  = "#1A6B3A"
-        zone_light  = "#D4EDDA"
-        zone_label  = t["silhouette_legend_low"]
+        zc = "#1A6B3A"; zl = t["silhouette_legend_low"]
     elif risk_score < 60:
-        zone_color  = "#B45309"
-        zone_light  = "#FEF3C7"
-        zone_label  = t["silhouette_legend_med"]
+        zc = "#B45309"; zl = t["silhouette_legend_med"]
     else:
-        zone_color  = "#B91C1C"
-        zone_light  = "#FEE2E2"
-        zone_label  = t["silhouette_legend_high"]
+        zc = "#B91C1C"; zl = t["silhouette_legend_high"]
 
-    # Paramètres de la silhouette
-    # Base : silhouette centrée sur x=200, hauteur totale 340px
+    # Dimensions fixes — silhouette centrée sur x=200 dans viewBox 420x500
     cx = 200
+    bf = "#E8D5C4"   # body fill
+    bs = "#B8A090"   # body stroke
 
-    # Proportions relatives à la taille (normalisées)
-    scale    = 260 / height       # 260px pour la silhouette
-    head_r   = 22                  # rayon de la tête
-    neck_w   = 14                  # largeur cou
-    shoulder_w = min(hip * scale * 0.82, 95)   # épaules
-    chest_w  = min(hip * scale * 0.78, 88) if gender == "female" else min(hip * scale * 0.76, 92)
-    waist_w  = waist * scale * 0.75
-    hip_w    = hip   * scale * 0.82
-    leg_w    = hip   * scale * 0.38
-    
-    # Positions Y
-    y_top    = 30
-    y_head   = y_top + head_r + 2
-    y_neck_b = y_head + head_r + 8
-    y_shoulder = y_neck_b + 12
-    y_chest  = y_shoulder + 35
-    y_waist  = y_shoulder + 85
-    y_hip    = y_waist + 55
-    y_knee   = y_hip + 90
-    y_foot   = y_knee + 70
+    # Calculer les largeurs proportionnelles
+    sc   = 280 / max(height, 150)
+    sw   = min(max(hip * sc * 0.75, 50), 90)    # épaules demi-largeur
+    ww   = min(max(waist * sc * 0.38, 25), 55)  # taille demi-largeur
+    hw   = min(max(hip   * sc * 0.42, 35), 65)  # hanches demi-largeur
+    lw   = min(max(hip   * sc * 0.19, 12), 28)  # jambe demi-largeur
 
-    # Couleur de la silhouette selon genre
-    body_fill  = "#E8D5C4" if gender == "female" else "#D4C4B0"
-    body_stroke = "#B8A090"
+    # Coordonnées Y fixes
+    yH = 52    # centre tête
+    rH = 22    # rayon tête
+    yN = 82    # bas cou
+    yS = 100   # épaules
+    yW = 200   # taille
+    yP = 260   # hanches
+    yK = 350   # genoux
+    yF = 420   # pieds
 
-    # Construire le path SVG du corps
-    # Côté gauche (de haut en bas) puis côté droit (bas en haut)
-    lsh = cx - shoulder_w/2   # épaule gauche x
-    rsh = cx + shoulder_w/2   # épaule droite x
-    lch = cx - chest_w/2      # poitrine gauche
-    rch = cx + chest_w/2
-    lwa = cx - waist_w/2      # taille gauche
-    rwa = cx + waist_w/2
-    lhi = cx - hip_w/2        # hanche gauche
-    rhi = cx + hip_w/2
-    lle = cx - leg_w/2        # jambe gauche
-    rle = cx + leg_w/2
+    # Construire le path du corps avec des courbes douces
+    # Côté gauche puis droit
+    path = (
+        f"M {cx} {yN} "
+        f"C {cx-14} {yN+5}, {cx-sw-5} {yS-5}, {cx-sw} {yS} "
+        f"C {cx-sw-3} {yS+30}, {cx-ww-10} {yW-30}, {cx-ww} {yW} "
+        f"C {cx-ww-8} {yW+25}, {cx-hw-5} {yP-20}, {cx-hw} {yP} "
+        f"C {cx-hw+2} {yP+30}, {cx-lw-4} {yK-25}, {cx-lw} {yK} "
+        f"L {cx-lw+2} {yF} "
+        f"L {cx+lw-2} {yF} "
+        f"L {cx+lw} {yK} "
+        f"C {cx+lw+4} {yK-25}, {cx+hw-2} {yP+30}, {cx+hw} {yP} "
+        f"C {cx+hw+5} {yP-20}, {cx+ww+8} {yW+25}, {cx+ww} {yW} "
+        f"C {cx+ww+10} {yW-30}, {cx+sw+3} {yS+30}, {cx+sw} {yS} "
+        f"C {cx+sw+5} {yS-5}, {cx+14} {yN+5}, {cx} {yN} Z"
+    )
 
-    body_path = f"""M {cx} {y_neck_b}
-        C {cx-neck_w/2} {y_neck_b+4}, {lsh-10} {y_shoulder-8}, {lsh} {y_shoulder}
-        C {lsh-5} {y_chest-5}, {lch-8} {y_chest+10}, {lch} {y_chest+20}
-        C {lch-5} {y_waist-10}, {lwa-4} {y_waist-8}, {lwa} {y_waist}
-        C {lwa-6} {y_waist+20}, {lhi-8} {y_hip-15}, {lhi} {y_hip}
-        C {lhi+2} {y_hip+25}, {lle-6} {y_knee-20}, {lle} {y_knee}
-        L {lle-4} {y_foot}
-        L {cx-8} {y_foot}
-        L {cx+8} {y_foot}
-        L {rle+4} {y_foot}
-        L {rle} {y_knee}
-        C {rle+6} {y_knee-20}, {rhi-2} {y_hip+25}, {rhi} {y_hip}
-        C {rhi+8} {y_hip-15}, {rwa+6} {y_waist+20}, {rwa} {y_waist}
-        C {rwa+4} {y_waist-8}, {rch+5} {y_waist-10}, {rch} {y_chest+20}
-        C {rch+8} {y_chest+10}, {rsh+5} {y_chest-5}, {rsh} {y_shoulder}
-        C {rsh+10} {y_shoulder-8}, {cx+neck_w/2} {y_neck_b+4}, {cx} {y_neck_b} Z"""
+    # Zones colorées (waist et hip)
+    wx1 = cx - ww - 10; wx2 = (ww + 10) * 2
+    hx1 = cx - hw - 10; hx2 = (hw + 10) * 2
 
-    # Zone taille colorée (rectangle arrondi autour de la taille)
-    waist_zone_x = lwa - 8
-    waist_zone_w = waist_w + 16
-    waist_zone_y = y_waist - 25
-    waist_zone_h = 55
+    # Construire le SVG avec des string simples (pas de triple f-string)
+    lines = []
+    lines.append(f'<svg viewBox="0 0 420 480" width="100%" style="max-width:380px;display:block;margin:0 auto;">')
+    lines.append(f'  <defs><clipPath id="bc"><path d="{path}"/></clipPath></defs>')
 
-    # Zone hanches colorée
-    hip_zone_x = lhi - 8
-    hip_zone_w  = hip_w + 16
-    hip_zone_y  = y_hip - 25
-    hip_zone_h  = 55
+    # Corps de base
+    lines.append(f'  <path d="{path}" fill="{bf}" stroke="{bs}" stroke-width="1.5"/>')
 
-    svg = f'''
-    <svg viewBox="0 0 420 {int(y_foot + 60)}" width="100%" style="max-width:420px;display:block;margin:0 auto;">
-      <defs>
-        <clipPath id="body-clip">
-          <path d="{body_path}"/>
-        </clipPath>
-      </defs>
+    # Zone taille colorée (clippée sur le corps)
+    lines.append(f'  <rect x="{wx1}" y="{yW-28}" width="{wx2}" height="58" rx="8" fill="{zc}" opacity="0.30" clip-path="url(#bc)"/>')
+    lines.append(f'  <rect x="{wx1}" y="{yW-28}" width="{wx2}" height="58" rx="8" fill="none" stroke="{zc}" stroke-width="2" opacity="0.55" clip-path="url(#bc)"/>')
 
-      <!-- Corps de base -->
-      <path d="{body_path}" fill="{body_fill}" stroke="{body_stroke}" stroke-width="1.5"/>
+    # Zone hanches (plus légère)
+    lines.append(f'  <rect x="{hx1}" y="{yP-28}" width="{hx2}" height="58" rx="8" fill="{zc}" opacity="0.15" clip-path="url(#bc)"/>')
 
-      <!-- Zone taille colorée (clippée sur le corps) -->
-      <rect x="{waist_zone_x}" y="{waist_zone_y}" width="{waist_zone_w}" height="{waist_zone_h}"
-            rx="8" fill="{zone_color}" opacity="0.35" clip-path="url(#body-clip)"/>
-      <rect x="{waist_zone_x}" y="{waist_zone_y}" width="{waist_zone_w}" height="{waist_zone_h}"
-            rx="8" fill="none" stroke="{zone_color}" stroke-width="2" opacity="0.6" clip-path="url(#body-clip)"/>
+    # Tête (par-dessus le corps)
+    lines.append(f'  <circle cx="{cx}" cy="{yH}" r="{rH}" fill="{bf}" stroke="{bs}" stroke-width="1.5"/>')
 
-      <!-- Zone hanches colorée -->
-      <rect x="{hip_zone_x}" y="{hip_zone_y}" width="{hip_zone_w}" height="{hip_zone_h}"
-            rx="8" fill="{zone_color}" opacity="0.20" clip-path="url(#body-clip)"/>
+    # Lignes de mesure taille
+    lwa = cx - ww
+    rwa = cx + ww
+    lines.append(f'  <line x1="{lwa-20}" y1="{yW}" x2="{lwa-4}" y2="{yW}" stroke="{zc}" stroke-width="1.5" stroke-dasharray="4,2"/>')
+    lines.append(f'  <line x1="{rwa+4}" y1="{yW}" x2="{rwa+20}" y2="{yW}" stroke="{zc}" stroke-width="1.5" stroke-dasharray="4,2"/>')
 
-      <!-- Tête -->
-      <circle cx="{cx}" cy="{y_head}" r="{head_r}" fill="{body_fill}" stroke="{body_stroke}" stroke-width="1.5"/>
+    # Label taille (à gauche)
+    lbl_x = lwa - 25
+    lines.append(f'  <text x="{lbl_x}" y="{yW-10}" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="{zc}" font-weight="600">{t["silhouette_waist_lbl"]}</text>')
+    lines.append(f'  <text x="{lbl_x}" y="{yW+7}" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="{zc}" font-weight="700">{waist:.1f} cm</text>')
 
-      <!-- Lignes de mesure taille -->
-      <line x1="{lwa-22}" y1="{y_waist}" x2="{lwa-6}" y2="{y_waist}"
-            stroke="{zone_color}" stroke-width="1.5" stroke-dasharray="3,2"/>
-      <line x1="{rwa+6}" y1="{y_waist}" x2="{rwa+22}" y2="{y_waist}"
-            stroke="{zone_color}" stroke-width="1.5" stroke-dasharray="3,2"/>
+    # Lignes de mesure hanches
+    lhi = cx - hw
+    rhi = cx + hw
+    lines.append(f'  <line x1="{lhi-20}" y1="{yP+5}" x2="{lhi-4}" y2="{yP+5}" stroke="#6B7280" stroke-width="1" stroke-dasharray="4,2"/>')
+    lines.append(f'  <line x1="{rhi+4}" y1="{yP+5}" x2="{rhi+20}" y2="{yP+5}" stroke="#6B7280" stroke-width="1" stroke-dasharray="4,2"/>')
 
-      <!-- Labels gauche -->
-      <text x="{lwa-28}" y="{y_waist-8}" text-anchor="end"
-            font-family="Arial,sans-serif" font-size="11" fill="{zone_color}" font-weight="600">
-        {t["silhouette_waist_lbl"]}
-      </text>
-      <text x="{lwa-28}" y="{y_waist+8}" text-anchor="end"
-            font-family="Arial,sans-serif" font-size="12" fill="{zone_color}" font-weight="700">
-        {waist:.1f} cm
-      </text>
+    # Label hanches
+    lines.append(f'  <text x="{lbl_x}" y="{yP-5}" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="#6B7280" font-weight="600">{t["silhouette_hip_lbl"]}</text>')
+    lines.append(f'  <text x="{lbl_x}" y="{yP+12}" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#6B7280" font-weight="700">{hip:.1f} cm</text>')
 
-      <!-- Labels hanches -->
-      <line x1="{lhi-22}" y1="{y_hip+5}" x2="{lhi-6}" y2="{y_hip+5}"
-            stroke="#6B7280" stroke-width="1" stroke-dasharray="3,2"/>
-      <text x="{lhi-28}" y="{y_hip-5}" text-anchor="end"
-            font-family="Arial,sans-serif" font-size="11" fill="#6B7280" font-weight="600">
-        {t["silhouette_hip_lbl"]}
-      </text>
-      <text x="{lhi-28}" y="{y_hip+12}" text-anchor="end"
-            font-family="Arial,sans-serif" font-size="12" fill="#6B7280" font-weight="700">
-        {hip:.1f} cm
-      </text>
+    # Badge WHR centré
+    lines.append(f'  <rect x="{cx-38}" y="{yW+32}" width="76" height="22" rx="11" fill="{zc}" opacity="0.12"/>')
+    lines.append(f'  <rect x="{cx-38}" y="{yW+32}" width="76" height="22" rx="11" fill="none" stroke="{zc}" stroke-width="1" opacity="0.5"/>')
+    lines.append(f'  <text x="{cx}" y="{yW+47}" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="{zc}" font-weight="600">WHR {waist/hip:.2f}</text>')
 
-      <!-- Badge WHR -->
-      <rect x="{cx-35}" y="{y_waist+30}" width="70" height="22" rx="11"
-            fill="{zone_color}" opacity="0.12"/>
-      <rect x="{cx-35}" y="{y_waist+30}" width="70" height="22" rx="11"
-            fill="none" stroke="{zone_color}" stroke-width="1" opacity="0.5"/>
-      <text x="{cx}" y="{y_waist+45}" text-anchor="middle"
-            font-family="Arial,sans-serif" font-size="11" fill="{zone_color}" font-weight="600">
-        WHR {waist/hip:.2f}
-      </text>
+    # Légende en bas
+    lines.append(f'  <rect x="{cx-55}" y="448" width="12" height="12" rx="3" fill="{zc}" opacity="0.7"/>')
+    lines.append(f'  <text x="{cx-38}" y="459" font-family="Arial,sans-serif" font-size="11" fill="{zc}" font-weight="600">{zl}</text>')
 
-      <!-- Légende colorée en bas -->
-      <rect x="{cx-60}" y="{int(y_foot+15)}" width="14" height="14" rx="3"
-            fill="{zone_color}" opacity="0.7"/>
-      <text x="{cx-40}" y="{int(y_foot+26)}"
-            font-family="Arial,sans-serif" font-size="11" fill="{zone_color}" font-weight="600">
-        {zone_label}
-      </text>
-    </svg>
-    '''
-    return svg
+    lines.append('</svg>')
+    return "\n".join(lines)
+
 
 # ─────────────────────────────────────────────────────────────────
 # LOGIQUE PRINCIPALE — Vérification authentification
