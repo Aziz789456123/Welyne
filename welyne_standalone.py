@@ -304,6 +304,14 @@ section[data-testid="stSidebar"] { display: none; }
 .badge-ok     { background: #D1FAE5; color: #065F46; }
 .badge-warn   { background: #FEF3C7; color: #92400E; }
 .badge-danger { background: #FEE2E2; color: #991B1B; }
+.metric-desc  {
+    font-size: 0.78rem;
+    color: #9CA3AF;
+    line-height: 1.5;
+    margin-top: 0.5rem;
+    border-top: 1px solid #F3F4F6;
+    padding-top: 0.5rem;
+}
 
 .profil-card {
     background: linear-gradient(135deg, #0A4A3A, #0E6655);
@@ -535,13 +543,15 @@ def gauge(val, mn, mx, s1, s2, title, unit, h=190):
                       paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
     return fig
 
-def mc(icon, label, val, unit, badge_txt, badge_cls, card_cls):
+def mc(icon, label, val, unit, badge_txt, badge_cls, card_cls, description=""):
+    desc_html = f'<div class="metric-desc">{description}</div>' if description else ""
     return f"""
 <div class="metric-card {card_cls}">
     <span class="metric-icon">{icon}</span>
     <div class="metric-label">{label}</div>
     <div class="metric-value">{val}<span class="metric-unit"> {unit}</span></div>
     <span class="metric-badge badge-{badge_cls}">{badge_txt}</span>
+    {desc_html}
 </div>"""
 
 
@@ -865,21 +875,22 @@ else:
 
     c1,c2,c3 = st.columns(3, gap="medium")
     with c1:
-        st.markdown(mc("⚖️",t['n_imc'],f"{bmi:.1f}","",res['imc_cat'],imc_cls,imc_cls), unsafe_allow_html=True)
+        st.markdown(mc("⚖️",t['n_imc'],f"{bmi:.1f}","",res['imc_cat'],imc_cls,imc_cls,t['d_imc']), unsafe_allow_html=True)
     with c2:
-        st.markdown(mc("📏",t['n_waist'],f"{waist:.1f}","cm",b2t_fr[w_st],w_st,w_st), unsafe_allow_html=True)
+        st.markdown(mc("📏",t['n_waist'],f"{waist:.1f}","cm",b2t_fr[w_st],w_st,w_st,t['d_waist']), unsafe_allow_html=True)
     with c3:
-        st.markdown(mc("📐",t['n_whr'],f"{whr:.3f}","",t['normal'] if whr_st=="ok" else t['high'],whr_st,whr_st), unsafe_allow_html=True)
+        st.markdown(mc("📐",t['n_whr'],f"{whr:.3f}","",t['normal'] if whr_st=="ok" else t['high'],whr_st,whr_st,t['d_whr']), unsafe_allow_html=True)
 
     c4,c5,c6 = st.columns(3, gap="medium")
     with c4:
-        st.markdown(mc("🦴",t['n_hip'],f"{hip:.1f}","cm",t['normal'],"ok","ok"), unsafe_allow_html=True)
+        st.markdown(mc("🦴",t['n_hip'],f"{hip:.1f}","cm",t['normal'],"ok","ok",t['d_hip']), unsafe_allow_html=True)
     with c5:
-        st.markdown(mc("🔬",t['n_bf'],f"{bf:.1f}","%",b2t_fr[bf_st],bf_st,bf_st), unsafe_allow_html=True)
+        st.markdown(mc("🔬",t['n_bf'],f"{bf:.1f}","%",b2t_fr[bf_st],bf_st,bf_st,t['d_bf']), unsafe_allow_html=True)
     with c6:
         st.markdown(mc("❤️",t['n_score'],f"{score:.0f}","/100",rlbl,
                        "ok" if rcls=="low" else "warn" if rcls=="medium" else "danger",
-                       "ok" if rcls=="low" else "warn" if rcls=="medium" else "danger"), unsafe_allow_html=True)
+                       "ok" if rcls=="low" else "warn" if rcls=="medium" else "danger",
+                       t['d_score']), unsafe_allow_html=True)
 
     st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
 
