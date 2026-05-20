@@ -391,6 +391,14 @@ T = {
         "n_whr":"Rapport Taille / Hanches (WHR)",
         "n_bf":"Masse grasse estimée",
         "n_score":"Score de risque",
+        "silhouette_label":"Silhouette morphologique",
+        "silhouette_title":"Votre profil estimé",
+        "silhouette_waist_lbl":"Tour de taille",
+        "silhouette_hip_lbl":"Tour de hanches",
+        "silhouette_whr_lbl":"WHR",
+        "silhouette_legend_low":"Zone normale",
+        "silhouette_legend_med":"Zone attention",
+        "silhouette_legend_high":"Zone risque",
         "d_imc":"Mesure la corpulence : poids divise par la taille au carre. Normal entre 18.5 et 24.9.",
         "d_waist":"Tour de taille = graisse abdominale, la plus dangereuse pour le coeur. Mesure au nombril.",
         "d_hip":"Perimetre a l'endroit le plus large des fesses. Indicateur de morphologie.",
@@ -448,6 +456,14 @@ T = {
         "n_whr":"Waist-to-Hip Ratio (WHR)",
         "n_bf":"Estimated body fat",
         "n_score":"Risk score",
+        "silhouette_label":"Morphological silhouette",
+        "silhouette_title":"Your estimated profile",
+        "silhouette_waist_lbl":"Waist",
+        "silhouette_hip_lbl":"Hips",
+        "silhouette_whr_lbl":"WHR",
+        "silhouette_legend_low":"Normal zone",
+        "silhouette_legend_med":"Caution zone",
+        "silhouette_legend_high":"Risk zone",
         "d_imc":"Measures corpulence: weight divided by height squared. Normal range 18.5 to 24.9.",
         "d_waist":"Waist circumference = abdominal fat, most dangerous for heart health. Measured at navel.",
         "d_hip":"Circumference at the widest part of the hips. Morphological reference indicator.",
@@ -690,6 +706,171 @@ def afficher_historique_persistant(t):
         sb_delete_analyses(st.session_state.access_token, st.session_state.user_id)
         st.rerun()
 
+
+# ─────────────────────────────────────────────────────────────────
+# SILHOUETTE MORPHOLOGIQUE SVG (Phase 8)
+# ─────────────────────────────────────────────────────────────────
+def generer_silhouette(waist, hip, height, gender, risk_score, t):
+    """Génère une silhouette SVG dynamique basée sur les mesures."""
+
+    # Couleurs selon le score de risque
+    if risk_score < 30:
+        zone_color  = "#1A6B3A"
+        zone_light  = "#D4EDDA"
+        zone_label  = t["silhouette_legend_low"]
+    elif risk_score < 60:
+        zone_color  = "#B45309"
+        zone_light  = "#FEF3C7"
+        zone_label  = t["silhouette_legend_med"]
+    else:
+        zone_color  = "#B91C1C"
+        zone_light  = "#FEE2E2"
+        zone_label  = t["silhouette_legend_high"]
+
+    # Paramètres de la silhouette
+    # Base : silhouette centrée sur x=200, hauteur totale 340px
+    cx = 200
+
+    # Proportions relatives à la taille (normalisées)
+    scale    = 260 / height       # 260px pour la silhouette
+    head_r   = 22                  # rayon de la tête
+    neck_w   = 14                  # largeur cou
+    shoulder_w = min(hip * scale * 0.82, 95)   # épaules
+    chest_w  = min(hip * scale * 0.78, 88) if gender == "female" else min(hip * scale * 0.76, 92)
+    waist_w  = waist * scale * 0.75
+    hip_w    = hip   * scale * 0.82
+    leg_w    = hip   * scale * 0.38
+    
+    # Positions Y
+    y_top    = 30
+    y_head   = y_top + head_r + 2
+    y_neck_b = y_head + head_r + 8
+    y_shoulder = y_neck_b + 12
+    y_chest  = y_shoulder + 35
+    y_waist  = y_shoulder + 85
+    y_hip    = y_waist + 55
+    y_knee   = y_hip + 90
+    y_foot   = y_knee + 70
+
+    # Couleur de la silhouette selon genre
+    body_fill  = "#E8D5C4" if gender == "female" else "#D4C4B0"
+    body_stroke = "#B8A090"
+
+    # Construire le path SVG du corps
+    # Côté gauche (de haut en bas) puis côté droit (bas en haut)
+    lsh = cx - shoulder_w/2   # épaule gauche x
+    rsh = cx + shoulder_w/2   # épaule droite x
+    lch = cx - chest_w/2      # poitrine gauche
+    rch = cx + chest_w/2
+    lwa = cx - waist_w/2      # taille gauche
+    rwa = cx + waist_w/2
+    lhi = cx - hip_w/2        # hanche gauche
+    rhi = cx + hip_w/2
+    lle = cx - leg_w/2        # jambe gauche
+    rle = cx + leg_w/2
+
+    body_path = f"""M {cx} {y_neck_b}
+        C {cx-neck_w/2} {y_neck_b+4}, {lsh-10} {y_shoulder-8}, {lsh} {y_shoulder}
+        C {lsh-5} {y_chest-5}, {lch-8} {y_chest+10}, {lch} {y_chest+20}
+        C {lch-5} {y_waist-10}, {lwa-4} {y_waist-8}, {lwa} {y_waist}
+        C {lwa-6} {y_waist+20}, {lhi-8} {y_hip-15}, {lhi} {y_hip}
+        C {lhi+2} {y_hip+25}, {lle-6} {y_knee-20}, {lle} {y_knee}
+        L {lle-4} {y_foot}
+        L {cx-8} {y_foot}
+        L {cx+8} {y_foot}
+        L {rle+4} {y_foot}
+        L {rle} {y_knee}
+        C {rle+6} {y_knee-20}, {rhi-2} {y_hip+25}, {rhi} {y_hip}
+        C {rhi+8} {y_hip-15}, {rwa+6} {y_waist+20}, {rwa} {y_waist}
+        C {rwa+4} {y_waist-8}, {rch+5} {y_waist-10}, {rch} {y_chest+20}
+        C {rch+8} {y_chest+10}, {rsh+5} {y_chest-5}, {rsh} {y_shoulder}
+        C {rsh+10} {y_shoulder-8}, {cx+neck_w/2} {y_neck_b+4}, {cx} {y_neck_b} Z"""
+
+    # Zone taille colorée (rectangle arrondi autour de la taille)
+    waist_zone_x = lwa - 8
+    waist_zone_w = waist_w + 16
+    waist_zone_y = y_waist - 25
+    waist_zone_h = 55
+
+    # Zone hanches colorée
+    hip_zone_x = lhi - 8
+    hip_zone_w  = hip_w + 16
+    hip_zone_y  = y_hip - 25
+    hip_zone_h  = 55
+
+    svg = f'''
+    <svg viewBox="0 0 420 {int(y_foot + 60)}" width="100%" style="max-width:420px;display:block;margin:0 auto;">
+      <defs>
+        <clipPath id="body-clip">
+          <path d="{body_path}"/>
+        </clipPath>
+      </defs>
+
+      <!-- Corps de base -->
+      <path d="{body_path}" fill="{body_fill}" stroke="{body_stroke}" stroke-width="1.5"/>
+
+      <!-- Zone taille colorée (clippée sur le corps) -->
+      <rect x="{waist_zone_x}" y="{waist_zone_y}" width="{waist_zone_w}" height="{waist_zone_h}"
+            rx="8" fill="{zone_color}" opacity="0.35" clip-path="url(#body-clip)"/>
+      <rect x="{waist_zone_x}" y="{waist_zone_y}" width="{waist_zone_w}" height="{waist_zone_h}"
+            rx="8" fill="none" stroke="{zone_color}" stroke-width="2" opacity="0.6" clip-path="url(#body-clip)"/>
+
+      <!-- Zone hanches colorée -->
+      <rect x="{hip_zone_x}" y="{hip_zone_y}" width="{hip_zone_w}" height="{hip_zone_h}"
+            rx="8" fill="{zone_color}" opacity="0.20" clip-path="url(#body-clip)"/>
+
+      <!-- Tête -->
+      <circle cx="{cx}" cy="{y_head}" r="{head_r}" fill="{body_fill}" stroke="{body_stroke}" stroke-width="1.5"/>
+
+      <!-- Lignes de mesure taille -->
+      <line x1="{lwa-22}" y1="{y_waist}" x2="{lwa-6}" y2="{y_waist}"
+            stroke="{zone_color}" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <line x1="{rwa+6}" y1="{y_waist}" x2="{rwa+22}" y2="{y_waist}"
+            stroke="{zone_color}" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+      <!-- Labels gauche -->
+      <text x="{lwa-28}" y="{y_waist-8}" text-anchor="end"
+            font-family="Arial,sans-serif" font-size="11" fill="{zone_color}" font-weight="600">
+        {t["silhouette_waist_lbl"]}
+      </text>
+      <text x="{lwa-28}" y="{y_waist+8}" text-anchor="end"
+            font-family="Arial,sans-serif" font-size="12" fill="{zone_color}" font-weight="700">
+        {waist:.1f} cm
+      </text>
+
+      <!-- Labels hanches -->
+      <line x1="{lhi-22}" y1="{y_hip+5}" x2="{lhi-6}" y2="{y_hip+5}"
+            stroke="#6B7280" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="{lhi-28}" y="{y_hip-5}" text-anchor="end"
+            font-family="Arial,sans-serif" font-size="11" fill="#6B7280" font-weight="600">
+        {t["silhouette_hip_lbl"]}
+      </text>
+      <text x="{lhi-28}" y="{y_hip+12}" text-anchor="end"
+            font-family="Arial,sans-serif" font-size="12" fill="#6B7280" font-weight="700">
+        {hip:.1f} cm
+      </text>
+
+      <!-- Badge WHR -->
+      <rect x="{cx-35}" y="{y_waist+30}" width="70" height="22" rx="11"
+            fill="{zone_color}" opacity="0.12"/>
+      <rect x="{cx-35}" y="{y_waist+30}" width="70" height="22" rx="11"
+            fill="none" stroke="{zone_color}" stroke-width="1" opacity="0.5"/>
+      <text x="{cx}" y="{y_waist+45}" text-anchor="middle"
+            font-family="Arial,sans-serif" font-size="11" fill="{zone_color}" font-weight="600">
+        WHR {waist/hip:.2f}
+      </text>
+
+      <!-- Légende colorée en bas -->
+      <rect x="{cx-60}" y="{int(y_foot+15)}" width="14" height="14" rx="3"
+            fill="{zone_color}" opacity="0.7"/>
+      <text x="{cx-40}" y="{int(y_foot+26)}"
+            font-family="Arial,sans-serif" font-size="11" fill="{zone_color}" font-weight="600">
+        {zone_label}
+      </text>
+    </svg>
+    '''
+    return svg
+
 # ─────────────────────────────────────────────────────────────────
 # LOGIQUE PRINCIPALE — Vérification authentification
 # ─────────────────────────────────────────────────────────────────
@@ -920,6 +1101,19 @@ else:
         st.plotly_chart(gauge(whr,0.55,1.30,s_whr,s_whr+0.12,t['n_whr'],""), use_container_width=True, config={'displayModeBar':False})
     with j3:
         st.plotly_chart(gauge(bf,0,60,bf_ok,bf_warn,t['n_bf'],"%"), use_container_width=True, config={'displayModeBar':False})
+
+    st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
+
+    # Silhouette morphologique
+    st.markdown(f'<div class="section-label">{t["silhouette_label"]}</div><div class="section-title">{t["silhouette_title"]}</div>', unsafe_allow_html=True)
+
+    sil_col1, sil_col2, sil_col3 = st.columns([1, 2, 1])
+    with sil_col2:
+        svg_silhouette = generer_silhouette(
+            waist=waist, hip=hip, height=taille,
+            gender=sexe, risk_score=score, t=t
+        )
+        st.markdown(svg_silhouette, unsafe_allow_html=True)
 
     st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
 
