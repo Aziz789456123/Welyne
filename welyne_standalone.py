@@ -1,6 +1,6 @@
 """
-WELYNE — Application complète autonome
-Le modèle ML est chargé directement — pas besoin d'API séparée
+WELYNE — Application complète avec authentification Supabase
+Phase 7 : Login email/mot de passe + historique persistant
 """
 
 import streamlit as st
@@ -9,11 +9,77 @@ import pandas as pd
 import plotly.graph_objects as go
 import joblib
 import os
-import base64, pickle
+import base64
+import pickle
+import requests
+import json
 from datetime import datetime
 
 # ─────────────────────────────────────────────────────────────────
-# CONFIG
+# CONFIGURATION SUPABASE
+# ─────────────────────────────────────────────────────────────────
+SUPABASE_URL = "https://qprjphyezalifwsiwoyi.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcmpwaHllemFsaWZ3c2l3b3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNjM3NTQsImV4cCI6MjA5NDgzOTc1NH0.XRkG0_mtbOBULA6B_X5gNyM4G8dLVTJzb31zcz5gUI4"
+
+def sb_headers(token=None):
+    h = {"apikey": SUPABASE_KEY, "Content-Type": "application/json"}
+    if token:
+        h["Authorization"] = f"Bearer {token}"
+    else:
+        h["Authorization"] = f"Bearer {SUPABASE_KEY}"
+    return h
+
+def sb_signup(email, password):
+    r = requests.post(f"{SUPABASE_URL}/auth/v1/signup",
+        headers=sb_headers(),
+        json={"email": email, "password": password})
+    return r.json()
+
+def sb_login(email, password):
+    r = requests.post(f"{SUPABASE_URL}/auth/v1/token?grant_type=password",
+        headers=sb_headers(),
+        json={"email": email, "password": password})
+    return r.json()
+
+def sb_logout(token):
+    requests.post(f"{SUPABASE_URL}/auth/v1/logout",
+        headers=sb_headers(token))
+
+def sb_save_analyse(token, user_id, data):
+    payload = {
+        "user_id"   : user_id,
+        "height"    : data["height"],
+        "weight"    : data["weight"],
+        "age"       : data["age"],
+        "gender"    : data["gender"],
+        "bmi"       : data["BMI"],
+        "waist"     : data["waist"],
+        "hip"       : data["hip"],
+        "whr"       : data["whr"],
+        "body_fat"  : data["bf"],
+        "risk_score": data["score"],
+        "risk_level": data["risk_lv"],
+    }
+    r = requests.post(f"{SUPABASE_URL}/rest/v1/analyses",
+        headers={**sb_headers(token), "Prefer": "return=minimal"},
+        json=payload)
+    return r.status_code == 201
+
+def sb_get_analyses(token, user_id):
+    r = requests.get(
+        f"{SUPABASE_URL}/rest/v1/analyses?user_id=eq.{user_id}&order=created_at.desc",
+        headers=sb_headers(token))
+    if r.status_code == 200:
+        return r.json()
+    return []
+
+def sb_delete_analyses(token, user_id):
+    requests.delete(
+        f"{SUPABASE_URL}/rest/v1/analyses?user_id=eq.{user_id}",
+        headers=sb_headers(token))
+
+# ─────────────────────────────────────────────────────────────────
+# CONFIG PAGE
 # ─────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Welyne — Bilan Morphologique",
@@ -37,6 +103,55 @@ def charger_modele():
 
 model, model_ok = charger_modele()
 
+
+# ─────────────────────────────────────────────────────────────────
+# CSS AUTHENTIFICATION (ajout Phase 7)
+# ─────────────────────────────────────────────────────────────────
+AUTH_CSS = """
+<style>
+.auth-container {
+    max-width: 480px;
+    margin: 3rem auto;
+    padding: 2.5rem;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+    border: 1px solid rgba(201,168,76,0.15);
+}
+.auth-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #0A4A3A;
+    text-align: center;
+    margin-bottom: 0.3rem;
+}
+.auth-sub {
+    font-size: 0.88rem;
+    color: #9CA3AF;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.auth-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #C9A84C, transparent);
+    margin: 1.5rem 0;
+    opacity: 0.4;
+}
+.user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(10,74,58,0.08);
+    border: 1px solid rgba(10,74,58,0.2);
+    border-radius: 30px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.82rem;
+    color: #0A4A3A;
+    font-weight: 600;
+}
+</style>
+"""
 # ─────────────────────────────────────────────────────────────────
 # CSS
 # ─────────────────────────────────────────────────────────────────
@@ -346,7 +461,8 @@ T = {
 # ─────────────────────────────────────────────────────────────────
 # SESSION STATE
 # ─────────────────────────────────────────────────────────────────
-for k, v in [('hist', []), ('res', None), ('lang', 'fr'), ('sexe', 'male'), ('profil', '')]:
+for k, v in [('hist', []), ('res', None), ('lang', 'fr'), ('sexe', 'male'), ('profil', ''),
+              ('user_id', None), ('user_email', None), ('access_token', None), ('auth_page', 'login')]:
     if k not in st.session_state:
         st.session_state[k] = v
 
@@ -428,17 +544,160 @@ def mc(icon, label, val, unit, badge_txt, badge_cls, card_cls):
     <span class="metric-badge badge-{badge_cls}">{badge_txt}</span>
 </div>"""
 
+
+# ─────────────────────────────────────────────────────────────────
+# PAGE AUTHENTIFICATION
+# ─────────────────────────────────────────────────────────────────
+def page_auth(t):
+    st.markdown(AUTH_CSS, unsafe_allow_html=True)
+    st.markdown("""
+    <div style="text-align:center;padding:2rem 0 1rem;">
+        <span style="font-family:Cormorant Garamond,serif;font-size:2.5rem;font-weight:600;color:#0A4A3A;">W<span style="color:#C9A84C">e</span>lyne</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col = st.columns([1,2,1])[1]
+    with col:
+        tabs = st.tabs(["🔐 Connexion", "📝 Inscription"])
+
+        with tabs[0]:
+            st.markdown("<br>", unsafe_allow_html=True)
+            email_l = st.text_input("Email", key="login_email", placeholder="votre@email.com")
+            pwd_l   = st.text_input("Mot de passe", type="password", key="login_pwd", placeholder="••••••••")
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("Se connecter", use_container_width=True, key="btn_login"):
+                if email_l and pwd_l:
+                    with st.spinner("Connexion..."):
+                        res = sb_login(email_l, pwd_l)
+                    if "access_token" in res:
+                        st.session_state.access_token = res["access_token"]
+                        st.session_state.user_id      = res["user"]["id"]
+                        st.session_state.user_email   = res["user"]["email"]
+                        st.rerun()
+                    else:
+                        msg = res.get("error_description", res.get("msg", "Erreur de connexion"))
+                        st.error(f"❌ {msg}")
+                else:
+                    st.warning("Veuillez remplir tous les champs.")
+
+        with tabs[1]:
+            st.markdown("<br>", unsafe_allow_html=True)
+            email_r = st.text_input("Email", key="reg_email", placeholder="votre@email.com")
+            pwd_r   = st.text_input("Mot de passe (min. 6 caractères)", type="password", key="reg_pwd", placeholder="••••••••")
+            pwd_r2  = st.text_input("Confirmer le mot de passe", type="password", key="reg_pwd2", placeholder="••••••••")
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("Créer mon compte", use_container_width=True, key="btn_register"):
+                if email_r and pwd_r and pwd_r2:
+                    if pwd_r != pwd_r2:
+                        st.error("❌ Les mots de passe ne correspondent pas.")
+                    elif len(pwd_r) < 6:
+                        st.error("❌ Le mot de passe doit contenir au moins 6 caractères.")
+                    else:
+                        with st.spinner("Création du compte..."):
+                            res = sb_signup(email_r, pwd_r)
+                        if "id" in res.get("user", {}):
+                            st.success("✅ Compte créé ! Vérifiez votre email pour confirmer votre compte, puis connectez-vous.")
+                        else:
+                            msg = res.get("error_description", res.get("msg", "Erreur lors de l'inscription"))
+                            st.error(f"❌ {msg}")
+                else:
+                    st.warning("Veuillez remplir tous les champs.")
+
+    st.markdown(f'<div style="text-align:center;margin-top:2rem;font-size:0.8rem;color:#9CA3AF;">⚕️ {t["warning"]}</div>', unsafe_allow_html=True)
+
+
+def afficher_historique_persistant(t):
+    """Affiche l historique depuis Supabase."""
+    if not st.session_state.access_token:
+        return
+
+    analyses = sb_get_analyses(st.session_state.access_token, st.session_state.user_id)
+
+    if len(analyses) < 2:
+        return
+
+    st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-label">{t["hist_label"]} — Historique persistant</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t["hist_title"]}</div>', unsafe_allow_html=True)
+
+    df = pd.DataFrame(analyses)
+    df["date"] = pd.to_datetime(df["created_at"]).dt.strftime("%d/%m %H:%M")
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=df["date"], y=df["waist"],
+        name=t["n_waist"],
+        line=dict(color="#0E6655", width=3),
+        mode="lines+markers",
+        marker=dict(size=10, color="#0E6655", line=dict(color="white", width=2))
+    ))
+    fig.add_trace(go.Scatter(
+        x=df["date"], y=df["risk_score"],
+        name=t["n_score"],
+        line=dict(color="#C9A84C", width=3, dash="dot"),
+        mode="lines+markers",
+        marker=dict(size=10, color="#C9A84C", line=dict(color="white", width=2)),
+        yaxis="y2"
+    ))
+    fig.update_layout(
+        plot_bgcolor="white", paper_bgcolor="white",
+        height=320, margin=dict(t=40, b=50, l=60, r=70),
+        yaxis=dict(title="Tour de taille (cm)",
+                   title_font=dict(color="#0E6655", size=12),
+                   tickfont=dict(color="#0E6655", size=11),
+                   gridcolor="#EEEEEE", showline=True, linecolor="#CCCCCC"),
+        yaxis2=dict(title="Score (/100)",
+                    title_font=dict(color="#C9A84C", size=12),
+                    tickfont=dict(color="#C9A84C", size=11),
+                    overlaying="y", side="right", range=[0, 100],
+                    showgrid=False, showline=True, linecolor="#CCCCCC"),
+        xaxis=dict(tickfont=dict(color="#333333", size=11), gridcolor="#EEEEEE"),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02,
+                    xanchor="center", x=0.5,
+                    bgcolor="white", bordercolor="#DDDDDD", borderwidth=1,
+                    font=dict(size=12, color="#333333")),
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Tableau
+    df_show = df[["date", "bmi", "waist", "hip", "whr", "body_fat", "risk_score", "risk_level"]].copy()
+    df_show.columns = ["Date", "IMC", "Taille (cm)", "Hanches (cm)", "WHR", "Masse grasse (%)", "Score", "Niveau"]
+    st.dataframe(df_show, use_container_width=True, hide_index=True)
+
+    if st.button(f"🗑  {t['clear']}"):
+        sb_delete_analyses(st.session_state.access_token, st.session_state.user_id)
+        st.rerun()
+
+# ─────────────────────────────────────────────────────────────────
+# LOGIQUE PRINCIPALE — Vérification authentification
+# ─────────────────────────────────────────────────────────────────
+t = T[st.session_state.lang]
+
+if not st.session_state.access_token:
+    page_auth(t)
+    st.stop()
+
 # ─────────────────────────────────────────────────────────────────
 # NAVBAR
+
 # ─────────────────────────────────────────────────────────────────
-nc1, nc2, nc3 = st.columns([3, 5, 2])
+nc1, nc2, nc3, nc4 = st.columns([2, 4, 2, 2])
 with nc1:
     st.markdown('<div style="padding:0.5rem 0;font-family:Cormorant Garamond,serif;font-size:1.5rem;font-weight:600;color:#0A4A3A;">W<span style="color:#C9A84C">e</span>lyne</div>', unsafe_allow_html=True)
+with nc2:
+    email_short = st.session_state.user_email.split("@")[0] if st.session_state.user_email else ""
+    st.markdown(f'<div style="padding:0.6rem 0;"><span class="user-badge">👤 {email_short}</span></div>', unsafe_allow_html=True)
 with nc3:
     lang = st.selectbox("", ["Français","English"],
                         index=0 if st.session_state.lang=='fr' else 1,
                         label_visibility="collapsed")
     st.session_state.lang = 'fr' if lang=="Français" else 'en'
+with nc4:
+    if st.button("🚪 Déconnexion", use_container_width=True):
+        sb_logout(st.session_state.access_token)
+        for k in ['access_token','user_id','user_email','res','hist','profil']:
+            st.session_state[k] = None if k != 'hist' else []
+        st.rerun()
 
 t = T[st.session_state.lang]
 
@@ -535,7 +794,14 @@ if st.session_state.res is None:
         st.session_state.res    = res
         st.session_state.sexe   = sexe
         st.session_state.profil = f"{taille} cm  •  {poids} kg  •  {age} ans  •  {sexe_l}"
+        # Sauvegarder dans Supabase
+        if st.session_state.access_token:
+            save_data = {**res, "height": taille, "weight": poids, "age": age, "gender": sexe}
+            sb_save_analyse(st.session_state.access_token, st.session_state.user_id, save_data)
         st.rerun()
+
+    # Historique persistant Supabase
+    afficher_historique_persistant(t)
 
     st.markdown(f'<div class="medical-warn">⚕️ {t["warning"]}</div>', unsafe_allow_html=True)
 
@@ -698,5 +964,8 @@ else:
         if st.button(f"🗑  {t['clear']}"):
             st.session_state.hist = []
             st.rerun()
+
+    # Historique persistant Supabase
+    afficher_historique_persistant(t)
 
     st.markdown(f'<div class="medical-warn">⚕️ {t["warning"]}</div>', unsafe_allow_html=True)
