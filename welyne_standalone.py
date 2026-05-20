@@ -693,7 +693,7 @@ with nc3:
                         label_visibility="collapsed")
     st.session_state.lang = 'fr' if lang=="Français" else 'en'
 with nc4:
-    if st.button("🚪 Déconnexion", use_container_width=True):
+    if st.button("🚪 Déconnexion", use_container_width=True, key="btn_logout"):
         sb_logout(st.session_state.access_token)
         for k in ['access_token','user_id','user_email','res','hist','profil']:
             st.session_state[k] = None if k != 'hist' else []
@@ -782,7 +782,7 @@ if st.session_state.res is None:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    if st.button(f"🔍  {t['btn']}"):
+    if st.button(f"🔍  {t['btn']}", key="btn_analyser"):
         with st.spinner(t['loading']):
             res = predire(taille, poids, age, sexe, waist_reel, hip_reel)
         entry = {
@@ -813,7 +813,7 @@ else:
     sexe  = st.session_state.sexe
     profil= st.session_state.profil
 
-    if st.button(t['new']):
+    if st.button(t['new'], key="btn_new"):
         st.session_state.res = None
         st.rerun()
 
@@ -961,7 +961,7 @@ else:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        if st.button(f"🗑  {t['clear']}", key="btn_clear_supabase"):
+        if st.button(f"🗑  {t['clear']}", key="btn_clear_local"):
             st.session_state.hist = []
             st.rerun()
 
