@@ -545,6 +545,7 @@ def predire(height, weight, age, gender, waist_reel=None, hip_reel=None):
     return {
         "BMI": bmi, "waist": waist, "hip": hip, "whr": whr,
         "bf": bf, "score": score, "sex": sex,
+        "height": height, "weight": weight, "age": age, "gender": gender,
         "imc_cat": imc_cat(bmi),
         "waist_st": "ok" if (waist<94 if sex==1 else waist<80) else ("warn" if (waist<102 if sex==1 else waist<88) else "danger"),
         "whr_st"  : "ok" if whr < sw else "warn",
@@ -1110,7 +1111,7 @@ else:
     sil_col1, sil_col2, sil_col3 = st.columns([1, 2, 1])
     with sil_col2:
         svg_silhouette = generer_silhouette(
-            waist=waist, hip=hip, height=taille,
+            waist=waist, hip=hip, height=res["height"],
             gender=sexe, risk_score=score, t=t
         )
         st.markdown(svg_silhouette, unsafe_allow_html=True)
