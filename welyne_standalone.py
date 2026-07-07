@@ -88,17 +88,30 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ─────────────────────────────────────────────────────────────────
-# CHARGEMENT DU MODELE
-# ─────────────────────────────────────────────────────────────────
-MODEL_B64 = "gASVuQUAAAAAAACMEHNrbGVhcm4ucGlwZWxpbmWUjAhQaXBlbGluZZSTlCmBlH2UKIwFc3RlcHOUXZQojAZzY2FsZXKUjBtza2xlYXJuLnByZXByb2Nlc3NpbmcuX2RhdGGUjA5TdGFuZGFyZFNjYWxlcpSTlCmBlH2UKIwJd2l0aF9tZWFulIiMCHdpdGhfc3RklIiMBGNvcHmUiIwObl9mZWF0dXJlc19pbl+USwWMD25fc2FtcGxlc19zZWVuX5SMFm51bXB5Ll9jb3JlLm11bHRpYXJyYXmUjAZzY2FsYXKUk5SMBW51bXB5lIwFZHR5cGWUk5SMAmY4lImIh5RSlChLA4wBPJROTk5K/////0r/////SwB0lGJDCAAAAAAA9rJAlIaUUpSMBW1lYW5flGgSjAxfcmVjb25zdHJ1Y3SUk5RoFYwHbmRhcnJheZSTlEsAhZRDAWKUh5RSlChLAUsFhZRoF4wCZjiUiYiHlFKUKEsDaBtOTk5K/////0r/////SwB0lGKJQygCU8GsBW1lQATGOjLV6lNAJazgqkTPPUCHs+6rRoblP8HKu5l89jpAlHSUYowEdmFyX5RoImgkSwCFlGgmh5RSlChLAUsFhZRoLIlDKIMzsU33HVRAgTigC0bcbkAQXE/4C9ZSQN6VJedZL8w/mxw2jWMdMECUdJRijAZzY2FsZV+UaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQyir61lQ2fAhQH/am4fQbC9A4l43qzhcIUAZAwzVLgjePxAGXQ2rDhBAlHSUYowQX3NrbGVhcm5fdmVyc2lvbpSMBTEuOC4wlHVihpSMBW1vZGVslIwTc2tsZWFybi5tdWx0aW91dHB1dJSMFE11bHRpT3V0cHV0UmVncmVzc29ylJOUKYGUfZQojAllc3RpbWF0b3KUjBtza2xlYXJuLmxpbmVhcl9tb2RlbC5fcmlkZ2WUjAVSaWRnZZSTlCmBlH2UKIwFYWxwaGGURz/wAAAAAAAAjA1maXRfaW50ZXJjZXB0lIiMBmNvcHlfWJSIjAhtYXhfaXRlcpROjAN0b2yURz8aNuLrHEMtjAZzb2x2ZXKUjARhdXRvlIwIcG9zaXRpdmWUiYwMcmFuZG9tX3N0YXRllE5oPmg/dWKMBm5fam9ic5ROjAtlc3RpbWF0b3JzX5RdlChoSimBlH2UKGhNRz/wAAAAAAAAaE6IaE+IaFBOaFFHPxo24uscQy1oUmhTaFSJaFVOaBBLBYwFY29lZl+UaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQygAcRgDWiDxP3ialceSPwxAFHjSP4PP9j+er2J6OCzovwaadvqGFxtAlHSUYowHbl9pdGVyX5ROjAdzb2x2ZXJflIwIY2hvbGVza3mUjAppbnRlcmNlcHRflGgUaBpDCGRjBFD52lZAlIaUUpRoPmg/dWJoSimBlH2UKGhNRz/wAAAAAAAAaE6IaE+IaFBOaFFHPxo24uscQy1oUmhTaFSJaFVOaBBLBWhbaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQyiRDd+vtKwQQNcziHaQvva/5IVCsKo41L8mgaI7QqIQwATii7aIByBAlHSUYmhiTmhjaGRoZWgUaBpDCJg35JKrfVlAlIaUUpRoPmg/dWJoSimBlH2UKGhNRz/wAAAAAAAAaE6IaE+IaFBOaFFHPxo24uscQy1oUmhTaFSJaFVOaBBLBWhbaCJoJEsAhZRoJoeUUpQoSwFLBYWUaCyJQyjdpNEWyFiHv+kkkAmKsJM/Ia4w7G2JkT/fc33VFg+dPztc2JGiAJE/lHSUYmhiTmhjaGRoZWgUaBpDCMeaLMLjouw/lIaUUpRoPmg/dWJlaBBLBWg+aD91YoaUZYwPdHJhbnNmb3JtX2lucHV0lE6MBm1lbW9yeZROjAd2ZXJib3NllIloPmg/dWIu"
+# -----------------------------------------------------------------
+# CHARGEMENT DU MODELE - Gradient Boosting (modele retenu, cf. memoire ch.2)
+# -----------------------------------------------------------------
+# Modele Gradient Boosting entraine sur 3 sources (ANSUR II + CAESAR + Bodyom,
+# 12 555 individus). Il predit le tour de taille (R2 = 0.885, MAE = 3.54 cm)
+# et le tour de hanches, a partir de [height, weight, age, sex, bmi].
+#
+# Le modele a ete entraine avec scikit-learn 1.6.1 : cette version est figee
+# dans requirements.txt pour garantir un chargement sans erreur sur Streamlit
+# Cloud (le modele et l'environnement de deploiement utilisent la meme version).
+
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "welyne_model_gb_phase5.joblib")
 
 @st.cache_resource
 def charger_modele():
+    """Charge le modele Gradient Boosting depuis le fichier .joblib.
+
+    Retourne (model, ok) : ok=False si le fichier est introuvable ou illisible.
+    """
     try:
-        model = pickle.loads(base64.b64decode(MODEL_B64))
+        model = joblib.load(MODEL_PATH)
         return model, True
     except Exception as e:
+        print(f"[Welyne] Erreur de chargement du modele : {e}")
         return None, False
 
 model, model_ok = charger_modele()
@@ -902,7 +915,7 @@ t = T[st.session_state.lang]
 # ERREUR MODELE
 # ─────────────────────────────────────────────────────────────────
 if not model_ok:
-    st.error("Modèle non trouvé. Assurez-vous que welyne_model_ridge.joblib est dans le même dossier.")
+    st.error("Modele introuvable : placez welyne_model_gb_phase5.joblib dans le meme dossier que l app.")
     st.stop()
 
 # ─────────────────────────────────────────────────────────────────
