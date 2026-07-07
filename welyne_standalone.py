@@ -95,26 +95,40 @@ st.set_page_config(
 # 12 555 individus). Il predit le tour de taille (R2 = 0.885, MAE = 3.54 cm)
 # et le tour de hanches, a partir de [height, weight, age, sex, bmi].
 #
-# Le modele a ete entraine avec scikit-learn 1.6.1 : cette version est figee
-# dans requirements.txt pour garantir un chargement sans erreur sur Streamlit
-# Cloud (le modele et l'environnement de deploiement utilisent la meme version).
+# Le modele a ete entraine avec scikit-learn 1.6.1. Cette version DOIT etre
+# figee dans requirements.txt (scikit-learn==1.6.1) pour un chargement fiable.
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "welyne_model_gb_phase5.joblib")
+MODEL_FILENAME = "welyne_model_gb_phase5.joblib"
+
+# On cherche le modele a plusieurs emplacements possibles, pour etre robuste
+# quel que soit le repertoire de travail sur Streamlit Cloud.
+_CANDIDATES = [
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), MODEL_FILENAME),
+    os.path.join(os.getcwd(), MODEL_FILENAME),
+    MODEL_FILENAME,
+]
 
 @st.cache_resource
 def charger_modele():
     """Charge le modele Gradient Boosting depuis le fichier .joblib.
 
-    Retourne (model, ok) : ok=False si le fichier est introuvable ou illisible.
+    Essaie plusieurs chemins. Retourne (model, ok, message) :
+    - ok=True  : modele charge, message vide
+    - ok=False : message contient la cause exacte de l echec
     """
-    try:
-        model = joblib.load(MODEL_PATH)
-        return model, True
-    except Exception as e:
-        print(f"[Welyne] Erreur de chargement du modele : {e}")
-        return None, False
+    dernier_probleme = "aucun fichier teste"
+    for chemin in _CANDIDATES:
+        if os.path.exists(chemin):
+            try:
+                model = joblib.load(chemin)
+                return model, True, ""
+            except Exception as e:
+                dernier_probleme = f"Fichier trouve ({chemin}) mais illisible : {e}"
+        else:
+            dernier_probleme = f"Fichier absent a : {chemin}"
+    return None, False, dernier_probleme
 
-model, model_ok = charger_modele()
+model, model_ok, model_erreur = charger_modele()
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -915,7 +929,12 @@ t = T[st.session_state.lang]
 # ERREUR MODELE
 # ─────────────────────────────────────────────────────────────────
 if not model_ok:
-    st.error("Modele introuvable : placez welyne_model_gb_phase5.joblib dans le meme dossier que l app.")
+    st.error("Le modele n a pas pu etre charge.")
+    st.info(
+        "Cause technique : " + str(model_erreur) + "\n\n"
+        "Verifiez que le fichier welyne_model_gb_phase5.joblib est bien sur GitHub "
+        "et que requirements.txt contient la ligne scikit-learn==1.6.1."
+    )
     st.stop()
 
 # ─────────────────────────────────────────────────────────────────
